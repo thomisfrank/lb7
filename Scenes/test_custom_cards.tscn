@@ -1,0 +1,19 @@
+[gd_scene load_steps=5 format=3 uid="uid://b6t1g1vbt5nxq"]
+
+[ext_resource type="Script" uid="uid://brxym1etuq3g6" path="res://Scripts/test_custom_cards.gd" id="1_test"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_sva33"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/pile.tscn" id="3_s8epg"]
+[ext_resource type="PackedScene" uid="uid://brwqfgagcvnns" path="res://Scenes/CardFramework/Core/custom_card_factory.tscn" id="4_custom"]
+
+[node name="TestCustomCards" type="Node"]
+script = ExtResource("1_test")
+
+[node name="CardManager" parent="." instance=ExtResource("2_sva33")]
+card_factory_scene = ExtResource("4_custom")
+
+[node name="TestPile" parent="CardManager" instance=ExtResource("3_s8epg")]
+layout_mode = 0
+offset_left = 967.0
+offset_top = 486.0
+offset_right = 967.0
+offset_bottom = 486.0
