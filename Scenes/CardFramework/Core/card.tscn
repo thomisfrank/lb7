@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://6riass0wy4ae"]
+[gd_scene load_steps=11 format=3 uid="uid://6riass0wy4ae"]
 
 [ext_resource type="Script" uid="uid://dtpomjc0u41g" path="res://Scripts/CardFramework/Core/card.gd" id="1_6ohl5"]
 [ext_resource type="Texture2D" uid="uid://docylqg8pdqeo" path="res://Assets/CardFramework/FrontFrame.png" id="2_yb5vf"]
 [ext_resource type="Shader" uid="uid://yy6gdky6agp3" path="res://Scripts/Shaders/DynamicCardBackground.gdshader" id="3_683ab"]
 [ext_resource type="Texture2D" uid="uid://b0v76y6x4qwme" path="res://Assets/icons/draw.png" id="4_0hfub"]
+[ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="5_0hfub"]
 [ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="5_idiet"]
 [ext_resource type="Texture2D" uid="uid://blqorwcwypprj" path="res://Assets/CardFramework/BackFrame.png" id="6_8j5ba"]
 
@@ -15,6 +16,11 @@ shader_parameter/speed = 0.3
 shader_parameter/intensity = 0.3
 shader_parameter/sharpness = 1.5
 shader_parameter/random_seed = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_idiet"]
+shader = ExtResource("5_0hfub")
+shader_parameter/jitter_rate = 4.50000016625
+shader_parameter/jitter_amount = 0.003
 
 [sub_resource type="LabelSettings" id="LabelSettings_yfbuq"]
 font = ExtResource("5_idiet")
@@ -62,6 +68,7 @@ stretch_mode = 5
 
 [node name="TopValue" type="Label" parent="FrontFace/TextureRect"]
 texture_filter = 1
+material = SubResource("ShaderMaterial_idiet")
 layout_mode = 0
 offset_left = 104.0
 offset_top = 7.0
@@ -72,6 +79,7 @@ label_settings = SubResource("LabelSettings_yfbuq")
 
 [node name="TopValue2" type="Label" parent="FrontFace/TextureRect"]
 texture_filter = 1
+material = SubResource("ShaderMaterial_idiet")
 layout_mode = 0
 offset_left = 5.0
 offset_top = 150.0
@@ -120,6 +128,7 @@ stretch_mode = 5
 
 [node name="TopValue" type="Label" parent="BackFace/TextureRect"]
 texture_filter = 1
+material = SubResource("ShaderMaterial_idiet")
 layout_mode = 0
 offset_left = 104.0
 offset_top = 7.0
@@ -130,6 +139,7 @@ label_settings = SubResource("LabelSettings_yfbuq")
 
 [node name="TopValue2" type="Label" parent="BackFace/TextureRect"]
 texture_filter = 1
+material = SubResource("ShaderMaterial_idiet")
 layout_mode = 0
 offset_left = 5.0
 offset_top = 150.0

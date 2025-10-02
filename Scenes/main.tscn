@@ -1,26 +1,28 @@
-[gd_scene load_steps=9 format=3 uid="uid://ctfxrhcbqydwj"]
+[gd_scene load_steps=11 format=3 uid="uid://ctfxrhcbqydwj"]
 
 [ext_resource type="Script" uid="uid://bbejvgriltre2" path="res://Scripts/main.gd" id="1_21xkr"]
 [ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_kry3j"]
 [ext_resource type="PackedScene" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_21xkr"]
 [ext_resource type="PackedScene" uid="uid://brwqfgagcvnns" path="res://Scenes/CardFramework/Core/custom_card_factory.tscn" id="3_6bp64"]
+[ext_resource type="PackedScene" uid="uid://2gbx8t47wulx" path="res://Scenes/UI/backgrounds.tscn" id="3_344ge"]
 [ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/pile.tscn" id="4_344ge"]
 [ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/hand.tscn" id="5_ynf5e"]
 [ext_resource type="PackedScene" uid="uid://cuovayfsjg0y1" path="res://Scenes/CardFramework/Containers/drop_zone.tscn" id="7_6bp64"]
+[ext_resource type="PackedScene" uid="uid://cmwnhwwwiwc82" path="res://Scenes/UI/deck_counter.tscn" id="8_ynf5e"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0xm2m"]
 shader = ExtResource("1_kry3j")
-shader_parameter/pixel_size = 1.0
-shader_parameter/scanline_darkness = 0.0
-shader_parameter/scanline_spacing = 1.0
-shader_parameter/curvature_amount = 0.0
-shader_parameter/aberration_amount = 0.0
-shader_parameter/noise_amount = 0.0
-shader_parameter/overlay_strength = 0.0
+shader_parameter/pixel_size = 3.7590001310525
+shader_parameter/scanline_darkness = 0.166000007885
+shader_parameter/scanline_spacing = 3.530000120175
+shader_parameter/curvature_amount = 0.2410000114475
+shader_parameter/aberration_amount = 0.010000000475
+shader_parameter/noise_amount = 0.150000007125
+shader_parameter/overlay_strength = 0.3270000155325
 shader_parameter/bloom_threshold = 0.0
 shader_parameter/bloom_intensity = 0.0
-shader_parameter/flicker_amount = 0.0
-shader_parameter/flicker_speed = 0.0
+shader_parameter/flicker_amount = 0.4590000218025
+shader_parameter/flicker_speed = 14.0230006660925
 
 [node name="Main" type="Node"]
 script = ExtResource("1_21xkr")
@@ -30,11 +32,13 @@ metadata/_edit_horizontal_guides_ = [544.0]
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="."]
 material = SubResource("ShaderMaterial_0xm2m")
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 1920.0
+offset_bottom = 1080.0
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+transparent_bg = true
 handle_input_locally = false
+canvas_item_default_texture_filter = 0
 size = Vector2i(1920, 1080)
 render_target_update_mode = 4
 
@@ -45,27 +49,35 @@ card_factory_scene = ExtResource("3_6bp64")
 
 [node name="Deck" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("4_344ge")]
 layout_mode = 0
-offset_left = 818.0
-offset_top = 535.0
-offset_right = 818.0
-offset_bottom = 535.0
+offset_left = 902.0
+offset_top = 543.0
+offset_right = 902.0
+offset_bottom = 543.0
 stack_display_gap = 7
 card_face_up = false
 
+[node name="DeckCounter" parent="SubViewportContainer/SubViewport/GameLayer/CardManager/Deck" instance=ExtResource("8_ynf5e")]
+layout_mode = 1
+offset_left = 199.00012
+offset_top = 27.000061
+offset_right = 199.00012
+offset_bottom = 27.000061
+scale = Vector2(0.40000117, 0.40000117)
+
 [node name="PlayerHand" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("5_ynf5e")]
 layout_mode = 0
-offset_left = 811.0
-offset_top = 932.0
-offset_right = 811.0
-offset_bottom = 932.0
+offset_left = 895.0
+offset_top = 940.0
+offset_right = 895.0
+offset_bottom = 940.0
 max_hand_size = 4
 
 [node name="OpponentHand" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("5_ynf5e")]
 layout_mode = 0
-offset_left = 811.0
-offset_top = 113.0
-offset_right = 811.0
-offset_bottom = 113.0
+offset_left = 895.0
+offset_top = 52.0
+offset_right = 895.0
+offset_bottom = 52.0
 max_hand_size = 4
 max_hand_spread = 850
 card_face_up = false
@@ -85,3 +97,8 @@ offset_left = 1334.0
 offset_top = 544.0
 offset_right = 1334.0
 offset_bottom = 544.0
+
+[node name="UILayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+layer = -50
+
+[node name="backgrounds" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("3_344ge")]

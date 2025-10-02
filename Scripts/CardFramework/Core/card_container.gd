@@ -27,6 +27,9 @@
 class_name CardContainer
 extends Control
 
+# Signal emitted when the number of cards in this container changes
+signal count_changed(new_count: int)
+
 # Static counter for unique container identification
 static var next_id: int = 0
 
@@ -113,6 +116,7 @@ func add_card(card: Card, index: int = -1) -> void:
 	else:
 		_insert_card_to_container(card, index)
 	_move_object(card, cards_node, index)
+	emit_signal("count_changed", get_card_count())
 
 
 ## Removes a card from this container.
@@ -125,6 +129,7 @@ func remove_card(card: Card) -> bool:
 	else:
 		return false
 	update_card_ui()
+	emit_signal("count_changed", get_card_count())
 	return true
 
 ## Returns the number of contained cards
@@ -142,6 +147,7 @@ func clear_cards() -> void:
 		_remove_object(card)
 	_held_cards.clear()
 	update_card_ui()
+	emit_signal("count_changed", get_card_count())
 
 
 ## Checks if the specified cards can be dropped into this container.
