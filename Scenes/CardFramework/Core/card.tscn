@@ -1,0 +1,150 @@
+[gd_scene load_steps=11 format=3 uid="uid://6riass0wy4ae"]
+
+[ext_resource type="Script" uid="uid://dtpomjc0u41g" path="res://Scripts/CardFramework/Core/card.gd" id="1_6ohl5"]
+[ext_resource type="Texture2D" uid="uid://docylqg8pdqeo" path="res://Assets/CardFramework/FrontFrame.png" id="2_yb5vf"]
+[ext_resource type="Shader" uid="uid://yy6gdky6agp3" path="res://Scripts/Shaders/DynamicCardBackground.gdshader" id="3_683ab"]
+[ext_resource type="Texture2D" uid="uid://b0v76y6x4qwme" path="res://Assets/icons/draw.png" id="4_0hfub"]
+[ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="5_0hfub"]
+[ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="5_idiet"]
+[ext_resource type="Texture2D" uid="uid://blqorwcwypprj" path="res://Assets/CardFramework/BackFrame.png" id="6_8j5ba"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cpgy4"]
+shader = ExtResource("3_683ab")
+shader_parameter/color_a = Color(0.149, 0.682, 0.373, 1)
+shader_parameter/color_b = Color(0.161, 0.686, 0.38, 1)
+shader_parameter/speed = 0.3
+shader_parameter/intensity = 0.3
+shader_parameter/sharpness = 1.5
+shader_parameter/random_seed = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_idiet"]
+shader = ExtResource("5_0hfub")
+shader_parameter/jitter_rate = 4.50000016625
+shader_parameter/jitter_amount = 0.003
+
+[sub_resource type="LabelSettings" id="LabelSettings_yfbuq"]
+font = ExtResource("5_idiet")
+font_size = 50
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[node name="Card" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_6ohl5")
+
+[node name="FrontFace" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 1
+
+[node name="TextureRect" type="TextureRect" parent="FrontFace"]
+layout_mode = 1
+offset_right = 150.0
+offset_bottom = 210.0
+texture = ExtResource("2_yb5vf")
+expand_mode = 5
+stretch_mode = 5
+
+[node name="DynamicBackground" type="ColorRect" parent="FrontFace/TextureRect"]
+material = SubResource("ShaderMaterial_cpgy4")
+layout_mode = 0
+offset_left = 4.5
+offset_top = 7.0
+offset_right = 144.5
+offset_bottom = 202.0
+
+[node name="Icon" type="TextureRect" parent="FrontFace/TextureRect"]
+layout_mode = 0
+offset_left = 42.000004
+offset_top = 63.0
+offset_right = 82.0
+offset_bottom = 125.0
+scale = Vector2(1.5200019, 1.5200019)
+texture = ExtResource("4_0hfub")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TopValue" type="Label" parent="FrontFace/TextureRect"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_idiet")
+layout_mode = 0
+offset_left = 104.0
+offset_top = 7.0
+offset_right = 144.0
+offset_bottom = 58.0
+text = "#"
+label_settings = SubResource("LabelSettings_yfbuq")
+
+[node name="TopValue2" type="Label" parent="FrontFace/TextureRect"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_idiet")
+layout_mode = 0
+offset_left = 5.0
+offset_top = 150.0
+offset_right = 45.0
+offset_bottom = 201.0
+text = "#"
+label_settings = SubResource("LabelSettings_yfbuq")
+horizontal_alignment = 2
+
+[node name="BackFace" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 1
+
+[node name="TextureRect" type="TextureRect" parent="BackFace"]
+layout_mode = 1
+offset_right = 150.0
+offset_bottom = 209.0
+texture = ExtResource("6_8j5ba")
+expand_mode = 5
+stretch_mode = 5
+
+[node name="DynamicBackground" type="ColorRect" parent="BackFace/TextureRect"]
+material = SubResource("ShaderMaterial_cpgy4")
+layout_mode = 0
+offset_left = 4.5
+offset_top = 7.0
+offset_right = 144.5
+offset_bottom = 202.0
+
+[node name="Icon" type="TextureRect" parent="BackFace/TextureRect"]
+unique_name_in_owner = true
+texture_filter = 1
+layout_mode = 0
+offset_left = 27.999998
+offset_top = 51.999996
+offset_right = 110.0173
+offset_bottom = 167.06024
+scale = Vector2(0.8322087, 0.8322087)
+texture = ExtResource("4_0hfub")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TopValue" type="Label" parent="BackFace/TextureRect"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_idiet")
+layout_mode = 0
+offset_left = 104.0
+offset_top = 7.0
+offset_right = 144.0
+offset_bottom = 58.0
+text = "#"
+label_settings = SubResource("LabelSettings_yfbuq")
+
+[node name="TopValue2" type="Label" parent="BackFace/TextureRect"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_idiet")
+layout_mode = 0
+offset_left = 5.0
+offset_top = 150.0
+offset_right = 45.0
+offset_bottom = 201.0
+text = "#"
+label_settings = SubResource("LabelSettings_yfbuq")
+horizontal_alignment = 2
