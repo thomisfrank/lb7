@@ -53,11 +53,19 @@ func _lock_all_cards() -> void:
 
 func _unlock_all_cards() -> void:
 	# Restore interaction for cards that were locked during the effect
+	# BUT: do NOT unlock cards that have the is_locked meta (those are permanently locked)
+	var unlocked_count = 0
 	for card in _cards_locked_during_effect:
 		if card and is_instance_valid(card):
+			# Skip cards that are permanently locked
+			if card.has_meta("is_locked"):
+				print("[UNLOCK_ALL] Skipping permanently locked card: ", card.name)
+				continue
+			
 			card.can_be_interacted_with = true
+			unlocked_count += 1
 			# mouse_filter is already STOP, no need to restore
-	LOG.log_args(["EffectsManager: unlocked", _cards_locked_during_effect.size(), "cards after effect"])
+	LOG.log_args(["EffectsManager: unlocked", unlocked_count, "cards after effect (", _cards_locked_during_effect.size() - unlocked_count, " remain locked)"])
 	_cards_locked_during_effect.clear()
 
 
@@ -67,6 +75,10 @@ func _process_queue() -> void:
 	if _processing_effects:
 		return
 	_processing_effects = true
+
+	# Defer SHUFFLE requests so they run after all other effects in this processing batch.
+	var deferred_shuffles: Array = []
+	LOG.log_args(["EffectsManager: _process_queue starting. queue_size=", _effect_queue.size()])
 
 	while _effect_queue.size() > 0:
 		var req = _effect_queue.pop_front()
@@ -78,19 +90,21 @@ func _process_queue() -> void:
 		var effect_type: String = req.effect_type
 		var chosen_card: Card = req.chosen_card
 
+		# If it's a SHUFFLE request, defer it until after other effects
+		if effect_type == "SHUFFLE":
+			deferred_shuffles.append(req)
+			continue
+
 		var res: Dictionary = {"success": false, "message": "Unhandled effect"}
 		match effect_type:
 			"DRAW":
 				res = await execute_draw_effect(card, player)
 			"SWAP":
-				# Start the swap process; this may set is_waiting_for_swap_selection and return a waiting result.
 				res = await execute_swap_effect(card, player, chosen_card)
 				# If swap entered a selection phase, wait until the selection completes
 				if is_waiting_for_swap_selection:
-					# Wait until swap selection completes; _complete_swap will clear is_waiting_for_swap_selection
 					while is_waiting_for_swap_selection:
 						await get_tree().process_frame
-					# After completion, the _complete_swap method will have set the final result into _completed_results
 					if _completed_results.has(req.id):
 						res = _completed_results[req.id]
 			_:
@@ -98,6 +112,14 @@ func _process_queue() -> void:
 
 		# Store result so the original caller can pick it up
 		_completed_results[req.id] = res
+
+	# After processing all non-shuffle effects, run deferred shuffles (last step)
+	for sreq in deferred_shuffles:
+		# run each shuffle and store its result
+		LOG.log_args(["EffectsManager: executing deferred shuffle req=", sreq.id, "player=", sreq.player])
+		var sres = execute_shuffle_effect(sreq)
+		_completed_results[sreq.id] = sres
+		LOG.log_args(["EffectsManager: deferred shuffle completed req=", sreq.id, "result=", sres])
 
 	# Finished processing
 	_processing_effects = false
@@ -172,6 +194,24 @@ func execute_card_effect(card: Card, player: String = "player", chosen_card: Car
 	_completed_results.erase(req_id)
 	return result
 
+
+## Public: enqueue a shuffle effect to be processed as the last step in the current batch
+func enqueue_shuffle(card: Card = null, player: String = "player") -> String:
+	var req_id = str(Engine.get_frames_drawn()) + "_shuffle_" + str(randi())
+	var req = {
+		"id": req_id,
+		"card": card,
+		"player": player,
+		"effect_type": "SHUFFLE",
+		"chosen_card": null
+	}
+	LOG.log_args(["EffectsManager.enqueue_shuffle called -> id=", req_id, "player=", player, "card=", card])
+	_effect_queue.append(req)
+	# Kick off processing if necessary
+	if not _processing_effects:
+		_process_queue()
+	return req_id
+
 ## Execute a draw effect: discard the card, wait, draw a new card, and lock it.
 func execute_draw_effect(played_card: Card, player: String) -> Dictionary:
 	if not deck or not player_hand or not opponent_hand or not discard_pile:
@@ -216,8 +256,9 @@ func execute_draw_effect(played_card: Card, player: String) -> Dictionary:
 		var dp = drawn_card.get_parent()
 		if dp:
 			parent_path = dp.get_path()
-		LOG.log_args(["EffectsManager: calling lock() on drawn_card=", drawn_card.name, " parent=", parent_path])
-		drawn_card.lock(0.7, true)
+		LOG.log_args(["EffectsManager: locking drawn_card=", drawn_card.name, " parent=", parent_path])
+		# Use lock_card() so the EffectsManager records and enforces the locked state
+		lock_card(drawn_card)
 	elif drawn_card and is_instance_valid(drawn_card):
 		# Fallback: mark non-interactive
 		drawn_card.can_be_interacted_with = false
@@ -235,7 +276,27 @@ func execute_draw_effect(played_card: Card, player: String) -> Dictionary:
 	_unlock_all_cards()
 
 	emit_signal("card_effect_executed", played_card, "DRAW", result)
+	
+	# Shuffle the player's hand after drawing
+	player_hand_ref.shuffle()
+	
 	return result
+
+
+## Execute a shuffle effect: shuffle the requested hand (or deck/container) as the final step
+func execute_shuffle_effect(req: Dictionary) -> Dictionary:
+	var player = req.player if req.has("player") else "player"
+	var target_hand: Hand = player_hand if player == "player" else opponent_hand
+
+	if not target_hand:
+		return {"success": false, "message": "No hand available to shuffle"}
+
+	# Simple shuffle like the example - just call shuffle()
+	target_hand.shuffle()
+
+	var res = {"success": true, "effect_type": "SHUFFLE", "player": player}
+	emit_signal("card_effect_executed", req.card if req.card else null, "SHUFFLE", res)
+	return res
 
 
 ## Execute a swap effect: move the card, then start the selection phase.
@@ -318,10 +379,22 @@ func execute_swap_effect(played_card: Card, player: String, chosen_card: Card = 
 	# Unlock all cards after swap completes
 	_unlock_all_cards()
 	
+	# Shuffle both hands after swap - player and opponent
+	player_hand.shuffle()
+	opponent_hand.shuffle()
+	
 	return res
 
 func _enable_opponent_card_selection(opponent_hand_ref: Hand):
 	for card in opponent_hand_ref._held_cards:
+		# Skip cards that are permanently locked
+		if card.has_meta("is_locked"):
+			print("[SELECTION] skipping locked card for selection: ", card.name)
+			continue
+		# Mark card as selectable for the duration of selection. This flag is
+		# checked by DraggableObject so hover animations can be allowed even when
+		# global interaction is otherwise disabled.
+		card.set_meta("selection_enabled", true)
 		card.can_be_interacted_with = true
 		card.mouse_filter = Control.MOUSE_FILTER_STOP
 		
@@ -350,6 +423,9 @@ func _on_opponent_card_selected(event: InputEvent, selected_card: Card):
 	# Disable selection and restore original appearance for all opponent cards
 	var opponent_hand_ref = opponent_hand if pending_swap_player == "player" else player_hand
 	for card in opponent_hand_ref._held_cards:
+		# Clear selection-enabled marker and restore interaction flags
+		if card.has_meta("selection_enabled"):
+			card.remove_meta("selection_enabled")
 		card.can_be_interacted_with = false
 		card.mouse_filter = Control.MOUSE_FILTER_PASS
 		# Remove selection highlight
@@ -444,16 +520,14 @@ func _complete_swap(chosen_card: Card) -> Dictionary:
 	# Add to owner's hand logic (this will snap it precisely into the hand)
 	owner_hand.add_card(chosen_card)
 
-	# Lock the card the player just received
-	if chosen_card and is_instance_valid(chosen_card) and chosen_card.has_method("lock"):
+	# Lock the card the player just received using lock_card() to properly set metadata
+	if chosen_card and is_instance_valid(chosen_card):
 		var parent_path = "null"
 		var cp = chosen_card.get_parent()
 		if cp:
 			parent_path = cp.get_path()
-		LOG.log_args(["EffectsManager: calling lock() on chosen_card=", chosen_card.name, " parent=", parent_path])
-		chosen_card.lock(0.7, true)
-	elif chosen_card and is_instance_valid(chosen_card):
-		chosen_card.can_be_interacted_with = false
+		LOG.log_args(["EffectsManager: locking chosen_card=", chosen_card.name, " parent=", parent_path])
+		lock_card(chosen_card)  # Use lock_card() instead of chosen_card.lock() to set is_locked meta
 
 	# 2) Now move the pending swap card into the opponent's hand area and then add it
 	pending_swap_card.move(opponent_target, 0)
@@ -489,49 +563,47 @@ func lock_card(card: Card) -> void:
 	if not card or not is_instance_valid(card) or locked_cards.has(card):
 		return
 
+	print("[LOCK] Locking card: ", card.name)
+	
+	# Record locked state and mark card as non-interactive
 	locked_cards.append(card)
+	
+	# Mark card as locked (stores state for checking later)
+	card.set_meta("is_locked", true)
+	
+	# Prevent all interactions except hover
 	card.can_be_interacted_with = false
 
-	# If an overlay already exists, just make sure it's visible
-	if card.has_node("LockOverlay"):
-		var existing_overlay = card.get_node("LockOverlay")
-		existing_overlay.visible = true
-		return
+	# Do NOT forcibly change the card's transform here; locking should be
+	# logical + visual only. Previously we attempted to force held cards back to
+	# IDLE and call return_to_original(), but that caused unexpected position
+	# jumps. If a caller needs to interrupt an active drag, do it explicitly
+	# before calling lock_card().
 
-	# Create a SINGLE TextureRect for the overlay, since your image is the full size.
-	var overlay = TextureRect.new()
-	overlay.name = "LockOverlay"
+	print("[LOCK] Card locked: ", card.name, " | can_interact=", card.can_be_interacted_with, " | is_locked=", card.has_meta("is_locked"))
 	
-	# Load your full-card overlay image.
-	overlay.texture = load("res://Assets/UI/LockOverlay.png")
-	
-	# Make the overlay cover the entire card.
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	
-	# Ensure the texture stretches to fill the node, ignoring its original size.
-	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	overlay.stretch_mode = TextureRect.STRETCH_SCALE
-
-	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	overlay.z_index = 10
-
-	# Start transparent so we can fade it in.
-	# We will fade it to be semi-transparent (0.7 alpha). Adjust this value if you want!
-	overlay.modulate = Color(1, 1, 1, 0.0)
-
-	card.add_child(overlay)
-	card.set_meta("lock_badge", overlay)
-
-	# Animate the overlay fading in to be semi-transparent.
-	var tween = create_tween()
-	tween.tween_property(overlay, "modulate:a", 0.7, 0.2)
+	# Show visual lock overlay
+	if card.has_method("lock"):
+		# We pass debug_visual=false here; callers can pass true if they want the red debug rect
+		card.lock(0.7, false)
 
 ## Unlocks a card so it can be played or interacted with.
 func unlock_card(card: Card) -> void:
 	if card and locked_cards.has(card):
+		print("[UNLOCK] Unlocking card: ", card.name)
+		
 		locked_cards.erase(card)
+		
+		# Remove locked state
+		if card.has_meta("is_locked"):
+			card.remove_meta("is_locked")
+		
+		# Restore interaction
 		card.can_be_interacted_with = true
-		# mouse_filter is already STOP, no need to restore
+		
+		print("[UNLOCK] Card unlocked: ", card.name, " | can_interact=", card.can_be_interacted_with, " | is_locked=", card.has_meta("is_locked"))
+		
+		# Remove visual lock overlay
 		if card.has_meta("lock_badge"):
 			var overlay = card.get_meta("lock_badge")
 			if is_instance_valid(overlay) and overlay.is_inside_tree():
@@ -551,6 +623,18 @@ func clear_all_lock_badges() -> void:
 				if is_instance_valid(badge) and badge.is_inside_tree():
 					badge.queue_free()
 				c.remove_meta("lock_badge")
+
+			# Also remove overlays placed under the front/back TextureRect parents
+			var fp = c.get_node_or_null("FrontFace/TextureRect")
+			var bp = c.get_node_or_null("BackFace/TextureRect")
+			if fp and fp.has_node("LockOverlay"):
+				var fo = fp.get_node("LockOverlay")
+				if is_instance_valid(fo) and fo.is_inside_tree():
+					fo.queue_free()
+			if bp and bp.has_node("LockOverlay"):
+				var bo = bp.get_node("LockOverlay")
+				if is_instance_valid(bo) and bo.is_inside_tree():
+					bo.queue_free()
 
 	# Also scan scene for any rogue badges using a DFS
 	var root = get_tree().get_root()

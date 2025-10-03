@@ -152,18 +152,26 @@ func _update_cards_can_be_interactwith(tableau: Tableau) -> void:
 	var count := 0
 	var max_super_move = maximum_number_of_super_move(null)
 	for card in tableau._held_cards:
+		# Respect permanently locked cards
+		if card.has_meta("is_locked"):
+			card.can_be_interacted_with = false
+			continue
 		card.can_be_interacted_with = false
 	for i in range(tableau._held_cards.size() - 1, -1, -1):
 		var target_card = tableau._held_cards[i]
 		if current_card == null:
 			current_card = target_card
-			target_card.can_be_interacted_with = true
+			# Only enable interaction if the card is not permanently locked
+			if not target_card.has_meta("is_locked"):
+				target_card.can_be_interacted_with = true
 			count += 1
 		elif count >= max_super_move:
 			return
 		elif current_card.is_next_number(target_card) and current_card.is_different_color(target_card):
 			current_card = target_card
-			target_card.can_be_interacted_with = true
+			# Only enable interaction if the card is not permanently locked
+			if not target_card.has_meta("is_locked"):
+				target_card.can_be_interacted_with = true
 			count += 1
 		else:
 			return

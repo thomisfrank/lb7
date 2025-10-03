@@ -1,0 +1,57 @@
+[gd_scene load_steps=9 format=3 uid="uid://drlqn0gjqk7ma"]
+
+[ext_resource type="Texture2D" uid="uid://ds4blade07koo" path="res://Assets/UI/InfoBox.png" id="1_3vyyd"]
+[ext_resource type="FontFile" uid="uid://cd0mg1j1e8pyd" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="2_fegag"]
+[ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="2_r7tqi"]
+[ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="2_uheus"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fegag"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pjlom"]
+shader = ExtResource("2_r7tqi")
+shader_parameter/jitter_rate = 4.000000142499999
+shader_parameter/jitter_amount = 0.003
+
+[sub_resource type="LabelSettings" id="LabelSettings_r7tqi"]
+font = ExtResource("2_fegag")
+font_size = 100
+
+[sub_resource type="LabelSettings" id="LabelSettings_pjlom"]
+font = ExtResource("2_uheus")
+font_size = 100
+
+[node name="RoundCounter" type="Control"]
+layout_mode = 3
+anchor_right = 0.2796875
+anchor_bottom = 0.26481482
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(285, 222)
+layout_mode = 0
+offset_right = 534.0
+offset_bottom = 285.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_fegag")
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer"]
+layout_mode = 2
+texture = ExtResource("1_3vyyd")
+
+[node name="Round" type="Label" parent="PanelContainer"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_pjlom")
+layout_mode = 2
+text = " Round:"
+label_settings = SubResource("LabelSettings_r7tqi")
+vertical_alignment = 1
+
+[node name="#" type="Label" parent="PanelContainer"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_pjlom")
+layout_mode = 2
+text = "# "
+label_settings = SubResource("LabelSettings_pjlom")
+horizontal_alignment = 2
+vertical_alignment = 1

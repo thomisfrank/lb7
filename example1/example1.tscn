@@ -1,10 +1,10 @@
 [gd_scene load_steps=12 format=3 uid="uid://60bwveuu2rt"]
 
 [ext_resource type="Script" uid="uid://cf56ce8uvkmha" path="res://example1/example1.gd" id="1_2r7vq"]
-[ext_resource type="PackedScene" uid="uid://c7u8hryloq7hy" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="1_rurpr"]
-[ext_resource type="PackedScene" uid="uid://dk6rb7lhv1ef6" path="res://Scenes/CardFramework/Containers/pile.tscn" id="2_xkfcc"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="1_rurpr"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/pile.tscn" id="2_xkfcc"]
 [ext_resource type="PackedScene" uid="uid://diap3gdfbqvjv" path="res://example1/my_card_factory.tscn" id="3_l4bd6"]
-[ext_resource type="PackedScene" uid="uid://bkpjlq7ggckg6" path="res://Scenes/CardFramework/Containers/hand.tscn" id="3_xp5g3"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/hand.tscn" id="3_xp5g3"]
 [ext_resource type="Texture2D" uid="uid://cv6ecvmkml3ok" path="res://example1/assets/images/cards/cardBack_green1.png" id="5_kl5wo"]
 [ext_resource type="Texture2D" uid="uid://dacwc4ros7wiv" path="res://example1/assets/images/cards/cardBack_green2.png" id="6_u8c1b"]
 [ext_resource type="Texture2D" uid="uid://c8mcrcwmgi0oc" path="res://example1/assets/images/cards/cardBack_green3.png" id="8_cv7sm"]
@@ -88,6 +88,7 @@ card_factory_scene = ExtResource("3_l4bd6")
 debug_mode = true
 
 [node name="Pile1" parent="CardManager" instance=ExtResource("2_xkfcc")]
+layout_mode = 0
 offset_left = 1000.0
 offset_top = 100.0
 offset_right = 1000.0
@@ -96,6 +97,7 @@ sensor_texture = ExtResource("5_kl5wo")
 sensor_visibility = true
 
 [node name="Pile2" parent="CardManager" instance=ExtResource("2_xkfcc")]
+layout_mode = 0
 offset_left = 1200.0
 offset_top = 100.0
 offset_right = 1200.0
@@ -106,6 +108,7 @@ sensor_texture = ExtResource("6_u8c1b")
 sensor_visibility = true
 
 [node name="Pile3" parent="CardManager" instance=ExtResource("2_xkfcc")]
+layout_mode = 0
 offset_left = 1400.0
 offset_top = 100.0
 offset_right = 1400.0
@@ -117,6 +120,7 @@ sensor_texture = ExtResource("8_cv7sm")
 sensor_visibility = true
 
 [node name="Pile4" parent="CardManager" instance=ExtResource("2_xkfcc")]
+layout_mode = 0
 offset_left = 1600.0
 offset_top = 100.0
 offset_right = 1600.0
@@ -127,12 +131,16 @@ sensor_texture = ExtResource("8_nwj6x")
 sensor_visibility = true
 
 [node name="Hand" parent="CardManager" instance=ExtResource("3_xp5g3")]
+layout_mode = 0
 offset_left = 1000.0
 offset_top = 800.0
 offset_right = 1000.0
 offset_bottom = 800.0
+max_hand_spread = 200
+card_hover_distance = 100.0
 
 [node name="Deck" parent="CardManager" instance=ExtResource("2_xkfcc")]
+layout_mode = 0
 offset_left = 300.0
 offset_top = 800.0
 offset_right = 300.0
@@ -141,6 +149,7 @@ card_face_up = false
 sensor_texture = ExtResource("10_tthv0")
 
 [node name="Discard" parent="CardManager" instance=ExtResource("2_xkfcc")]
+layout_mode = 0
 offset_left = 1600.0
 offset_top = 800.0
 offset_right = 1600.0

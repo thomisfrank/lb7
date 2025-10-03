@@ -37,9 +37,9 @@ func _ready() -> void:
 	# Debug: print drop zone sensor info after initialization
 	if debug_mode:
 		if drop_zone != null:
-			LOG.log_args(["PlayArea: drop_zone present. sensor_size=", drop_zone.sensor_size, ", stored_sensor_size=", drop_zone.stored_sensor_size])
+			pass # LOG.log_args(["PlayArea: drop_zone present. sensor_size=", drop_zone.sensor_size, ", stored_sensor_size=", drop_zone.stored_sensor_size])
 		else:
-			LOG.log("PlayArea: drop_zone is null after ready()")
+			pass # LOG.log("PlayArea: drop_zone is null after ready()")
 
 	# Connect to all cards in the card manager to detect dragging
 	if card_manager:
@@ -57,7 +57,7 @@ func _ready() -> void:
 		timer.start()
 	
 	if debug_mode:
-		LOG.log_args(["PlayArea ready - drop zone enabled:", enable_drop_zone])
+		pass # LOG.log_args(["PlayArea ready - drop zone enabled:", enable_drop_zone])
 
 
 ## Helper: ensure the drop_zone sensor is configured only when background has valid size.
@@ -72,7 +72,7 @@ func _ensure_drop_zone_sensor() -> void:
 		# Background not ready yet, retry
 		_drop_setup_attempts += 1
 		if _drop_setup_attempts > 10:
-			LOG.log("PlayArea: drop_zone sensor setup giving up after retries")
+			pass # LOG.log("PlayArea: drop_zone sensor setup giving up after retries")
 			return
 		
 		var t = Timer.new()
@@ -86,7 +86,7 @@ func _ensure_drop_zone_sensor() -> void:
 	# Background is ready, configure the sensor to match its size and position
 	var bg_size = _background.size * _background.scale
 	var bg_pos = _background.position
-	LOG.log_args(["PlayArea: configuring drop_zone sensor - size:", bg_size, "pos:", bg_pos])
+	# LOG.log_args(["PlayArea: configuring drop_zone sensor - size:", bg_size, "pos:", bg_pos])
 	drop_zone.set_sensor(bg_size, bg_pos, sensor_texture, sensor_visibility)
 	_drop_setup_attempts = 0  # Reset for any future use
 

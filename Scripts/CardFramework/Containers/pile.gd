@@ -112,7 +112,10 @@ func _update_target_positions() -> void:
 		card.move(target_pos, 0)
 		
 		# Apply interaction restrictions
-		if not allow_card_movement: 
+		# Do not enable interaction for permanently locked cards
+		if card.has_meta("is_locked"):
+			card.can_be_interacted_with = false
+		elif not allow_card_movement: 
 			card.can_be_interacted_with = false
 		elif restrict_to_top_card:
 			if i == _held_cards.size() - 1:

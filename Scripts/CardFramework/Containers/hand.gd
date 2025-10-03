@@ -34,6 +34,10 @@ extends CardContainer
 @export var card_face_up := true
 ## distance the card hovers when interacted with.
 @export var card_hover_distance := CardFrameworkSettings.PHYSICS_CARD_HOVER_DISTANCE
+## vertical offset applied when cards hover (positive moves down, negative moves up).
+@export var card_hover_y_offset: float = 0.0
+## whether cards in this hand can be interacted with by default.
+@export var cards_interactable := true
 
 @export_group("hand_shape")
 ## rotation curve of the hand.
@@ -168,7 +172,10 @@ func _update_target_positions() -> void:
 
 		card.move(target_pos, target_rotation)
 		card.show_front = card_face_up
-		card.can_be_interacted_with = true
+		# Only set can_be_interacted_with if not marked for selection and cards_interactable is true
+		# During selection phase, the selection_enabled meta will allow hover
+		if not card.has_meta("selection_enabled"):
+			card.can_be_interacted_with = cards_interactable
 
 	# Calculate midpoints between consecutive values in vertical_partitions_from_outside
 	vertical_partitions_from_inside.clear()
@@ -250,3 +257,17 @@ func hold_card(card: Card) -> void:
 	if _held_cards.has(card):
 		drop_zone.set_vertical_partitions(vertical_partitions_from_inside)
 	super.hold_card(card)
+
+
+## Override to apply hand-specific properties to cards when added
+func _assign_card_to_container(card: Card) -> void:
+	super._assign_card_to_container(card)
+	# Apply the hand's hover_y_offset to the card
+	card.hover_y_offset = card_hover_y_offset
+
+
+## Override to apply hand-specific properties to cards when inserted
+func _insert_card_to_container(card: Card, index: int) -> void:
+	super._insert_card_to_container(card, index)
+	# Apply the hand's hover_y_offset to the card
+	card.hover_y_offset = card_hover_y_offset

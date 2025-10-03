@@ -93,7 +93,6 @@ func _ready() -> void:
 	# ...existing code...
 
 
-
 func _on_move_done() -> void:
 	card_container.on_card_move_done(self)
 
@@ -248,37 +247,72 @@ func setup_card_back(back_data: Dictionary) -> void:
 func lock(overlay_alpha: float = 0.7, debug_visual: bool = false) -> void:
 	if not is_instance_valid(self):
 		return
-	# If overlay already exists, ensure visible
-	if has_node("LockOverlay"):
-		var existing = get_node("LockOverlay")
-		existing.visible = true
-		LOG.log_args(["Card.lock: existing overlay ->", name, "parent=", get_path(), "z=", existing.z_index])
+	# NOTE: lock() should only show visual overlays. Interaction gating is managed
+	# by the EffectsManager or callers. Previously this method forcefully changed
+	# input flags (mouse_filter/can_be_interacted_with) which led to unexpected
+	# state transitions. Restore to visual-only behavior so caller decides input.
+
+	# If overlay already exists under front/back, just ensure visible
+	var front_overlay = null
+	var back_overlay = null
+	if has_node("FrontFace/TextureRect/LockOverlay"):
+		front_overlay = get_node("FrontFace/TextureRect/LockOverlay")
+	if has_node("BackFace/TextureRect/LockOverlay"):
+		back_overlay = get_node("BackFace/TextureRect/LockOverlay")
+	if front_overlay or back_overlay:
+		if front_overlay:
+			front_overlay.visible = true
+		if back_overlay:
+			back_overlay.visible = true
+		LOG.log_args(["Card.lock: existing overlay(s) ->", name, "front=", front_overlay, "back=", back_overlay])
 		return
 
-	# Prevent interaction
-	can_be_interacted_with = false
+	# Create an overlay for the front face (so it perfectly matches the visual texture rect)
+	var front_parent = get_node_or_null("FrontFace/TextureRect")
+	var back_parent = get_node_or_null("BackFace/TextureRect")
 
-	# Single full-card overlay TextureRect
-	var overlay = TextureRect.new()
-	overlay.name = "LockOverlay"
-	overlay.texture = load("res://Assets/UI/LockOverlay.png")
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	overlay.stretch_mode = TextureRect.STRETCH_SCALE
-	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	overlay.z_index = 200
-	overlay.modulate = Color(1, 1, 1, 0.0)
-	add_child(overlay)
-	set_meta("lock_badge", overlay)
+	if front_parent and front_parent is Control:
+		var fo = TextureRect.new()
+		fo.name = "LockOverlay"
+		fo.texture = load("res://Assets/UI/LockOverlay.png")
+		fo.set_anchors_preset(Control.PRESET_FULL_RECT)
+		fo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		fo.stretch_mode = TextureRect.STRETCH_SCALE
+		fo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		fo.z_index = 200
+		fo.modulate = Color(1, 1, 1, 0.0)
+		front_parent.add_child(fo)
+		front_overlay = fo
 
-	LOG.log_args(["Card.lock: created overlay ->", name, "overlay_path=", overlay.get_path(), "parent=", get_path(), "z=", overlay.z_index, "card_size=", card_size])
+	# Create an overlay for the back face if present so lock covers either face
+	if back_parent and back_parent is Control:
+		var bo = TextureRect.new()
+		bo.name = "LockOverlay"
+		bo.texture = load("res://Assets/UI/LockOverlay.png")
+		bo.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		bo.stretch_mode = TextureRect.STRETCH_SCALE
+		bo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bo.z_index = 200
+		bo.modulate = Color(1, 1, 1, 0.0)
+		back_parent.add_child(bo)
+		back_overlay = bo
 
+	# Prefer storing the front overlay reference as metadata for legacy callers; also store a pair
+	if front_overlay:
+		set_meta("lock_badge", front_overlay)
+	elif back_overlay:
+		set_meta("lock_badge", back_overlay)
+
+	LOG.log_args(["Card.lock: created overlay(s) ->", name, "front=", front_overlay, "back=", back_overlay, "card_size=", card_size])
+
+	# Animate fade in on both overlays (if they exist)
 	var tween = create_tween()
-	tween.tween_property(overlay, "modulate:a", overlay_alpha, 0.2)
-	tween.tween_callback(func(): LOG.log_args(["Card.lock: overlay visible ->", name, "overlay=", overlay.name, "alpha=", overlay.modulate.a]))
-
-	# Diagnostic: log ancestor chain and siblings to help find occluders
-	_log_overlay_stack(overlay)
+	if front_overlay:
+		tween.tween_property(front_overlay, "modulate:a", overlay_alpha, 0.2)
+	if back_overlay:
+		tween.tween_property(back_overlay, "modulate:a", overlay_alpha, 0.2)
+	tween.tween_callback(func(): LOG.log_args(["Card.lock: overlay visible ->", name, "alpha=", overlay_alpha]))
 
 	# Optional debug overlay: bright translucent ColorRect so it's obvious on screen
 	if debug_visual:
@@ -332,18 +366,32 @@ func _log_overlay_stack(overlay: Node) -> void:
 func unlock() -> void:
 	if not is_instance_valid(self):
 		return
-	can_be_interacted_with = true
-	var overlay = null
+	# Do not implicitly change can_be_interacted_with or mouse_filter here.
+	# EffectsManager or callers are responsible for restoring interaction state.
+	# Fade out any overlays on the front/back face TextureRect parents
+	var front_parent = get_node_or_null("FrontFace/TextureRect")
+	var back_parent = get_node_or_null("BackFace/TextureRect")
+	var to_fade: Array = []
 	if has_meta("lock_badge"):
-		overlay = get_meta("lock_badge")
-	elif has_node("LockOverlay"):
-		overlay = get_node("LockOverlay")
+		var mb = get_meta("lock_badge")
+		if is_instance_valid(mb):
+			to_fade.append(mb)
+	# Also check for LockOverlay nodes under the face parents (covers new placement)
+	if front_parent and front_parent.has_node("LockOverlay"):
+		var fo = front_parent.get_node("LockOverlay")
+		if is_instance_valid(fo):
+			to_fade.append(fo)
+	if back_parent and back_parent.has_node("LockOverlay"):
+		var bo = back_parent.get_node("LockOverlay")
+		if is_instance_valid(bo):
+			to_fade.append(bo)
 
-	if overlay and is_instance_valid(overlay) and overlay.is_inside_tree():
-		var tween = create_tween()
-		tween.tween_property(overlay, "modulate:a", 0.0, 0.12)
-		tween.tween_callback(Callable(overlay, "queue_free"))
-		LOG.log_args(["Card.unlock: fading out overlay ->", name, "overlay=", overlay.name])
+	for overlay in to_fade:
+		if overlay and is_instance_valid(overlay) and overlay.is_inside_tree():
+			var tween = create_tween()
+			tween.tween_property(overlay, "modulate:a", 0.0, 0.12)
+			tween.tween_callback(Callable(overlay, "queue_free"))
+			LOG.log_args(["Card.unlock: fading out overlay ->", name, "overlay=", overlay.name])
 
 	if has_meta("lock_badge"):
 		remove_meta("lock_badge")

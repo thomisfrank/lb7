@@ -51,6 +51,7 @@ enum DraggableState {
 ## The duration for hover animations.
 @export var hover_duration: float = CardFrameworkSettings.ANIMATION_HOVER_DURATION
 
+@export var hover_y_offset: float = 0.0
 
 # Legacy variables - kept for compatibility but no longer used in state machine
 var is_pressed: bool = false
@@ -129,6 +130,9 @@ func change_state(new_state: DraggableState) -> bool:
 	current_state = new_state
 	
 	# Enter new state
+	# Debug: log state transitions for tracing locked/interaction issues
+	var is_locked = has_meta("is_locked")
+	print("[STATE] ", name, ": ", old_state, " -> ", new_state, " | can_be_interacted_with=", can_be_interacted_with, " | is_locked=", is_locked)
 	_enter_state(new_state, old_state)
 	
 	return true
@@ -184,6 +188,8 @@ func _exit_state(state: DraggableState) -> void:
 func _process(_delta: float) -> void:
 	match current_state:
 		DraggableState.HOLDING:
+			# While holding, follow the mouse. Do not forcibly bail out if interaction flags change
+			# — restore previous behavior where lock visuals do not secretly change holding state.
 			global_position = get_global_mouse_position() - current_holding_mouse_position
 
 
@@ -235,8 +241,8 @@ func _start_hover_animation() -> void:
 	hover_tween = create_tween()
 	hover_tween.set_parallel(true)  # Allow multiple properties to animate simultaneously
 	
-	# Animate position (hover up)
-	var target_position = Vector2(position.x, position.y - hover_distance)
+	# Animate position (hover up with optional y offset)
+	var target_position = Vector2(position.x, position.y - hover_distance + hover_y_offset)
 	hover_tween.tween_property(self, "position", target_position, hover_duration)
 	
 	# Animate scale
@@ -297,12 +303,77 @@ func _can_start_hovering() -> bool:
 	return true
 
 
+## Check if this card is the topmost (highest z-index) at the current mouse position.
+## Used to prevent hover effects on cards that are visually behind other cards.
+## Accounts for card rotation to accurately determine if mouse is over a rotated card.
+## @returns: True if this is the topmost card at mouse position, false otherwise
+func _is_topmost_at_mouse() -> bool:
+	# If we don't have a parent, we're the only option
+	if not get_parent():
+		return true
+	
+	# Check all siblings to see if any have higher z-index and contain mouse
+	var siblings = get_parent().get_children()
+	for sibling in siblings:
+		# Skip if not a Control-based DraggableObject or if it's this object
+		if sibling == self or not sibling is DraggableObject or not sibling is Control:
+			continue
+		
+		# Skip if sibling has lower or equal z-index
+		if sibling.z_index <= z_index:
+			continue
+		
+		# Skip if sibling can't be interacted with and isn't selectable
+		# (don't let non-interactive cards block hover)
+		var sib_draggable = sibling as DraggableObject
+		if not sib_draggable.can_be_interacted_with and not sib_draggable.has_meta("selection_enabled"):
+			continue
+		
+		# Account for rotation: transform mouse position to sibling's local space
+		var sib_control = sibling as Control
+		var local_mouse = sib_control.get_local_mouse_position()
+		var local_rect = Rect2(Vector2.ZERO, sib_control.size)
+		
+		if local_rect.has_point(local_mouse):
+			# A card with higher z-index is at this position, so we're not topmost
+			return false
+	
+	# No higher z-index card found at mouse position
+	return true
+
+
 func _on_mouse_enter() -> void:
 	is_mouse_inside = true
-	# Allow hovering even when locked (can_be_interacted_with = false)
-	# Drag will be prevented in _handle_mouse_pressed
-	if _can_start_hovering():
-		change_state(DraggableState.HOVERING)
+	
+	# Debug locked cards
+	var is_locked = has_meta("is_locked")
+	if is_locked:
+		print("[LOCKED CARD] Mouse entered: ", name, " | can_interact=", can_be_interacted_with, " | is_locked=", is_locked)
+	
+	# Check if hovering is allowed:
+	# - Must pass custom hover conditions (_can_start_hovering)
+	# - Must be interactable OR marked as selectable OR locked (locked cards show hover but can't drag)
+	# - Must be topmost at mouse position to prevent hover on cards behind others
+	if not _can_start_hovering():
+		if is_locked:
+			print("[LOCKED CARD] Failed _can_start_hovering: ", name)
+		return
+	
+	# Allow hover for: normal interactive cards, selection-enabled cards, or locked cards
+	if not (can_be_interacted_with or has_meta("selection_enabled") or is_locked):
+		if is_locked:
+			print("[LOCKED CARD] Failed interaction check: ", name)
+		return
+	
+	if not _is_topmost_at_mouse():
+		if is_locked:
+			print("[LOCKED CARD] Not topmost: ", name)
+		return
+	
+	if is_locked:
+		print("[LOCKED CARD] ✓ Entering HOVERING state: ", name)
+	
+	change_state(DraggableState.HOVERING)
 
 
 func _on_mouse_exit() -> void:
@@ -313,7 +384,20 @@ func _on_mouse_exit() -> void:
 
 
 func _on_gui_input(event: InputEvent) -> void:
+	# Defensive: if the card is locked, ignore mouse button input entirely
+	if has_meta("is_locked"):
+		if event is InputEventMouseButton:
+			var mouse_event = event as InputEventMouseButton
+			if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.is_pressed():
+				print("[LOCKED CARD] Input blocked by guard (is_locked): ", name)
+		return
+
 	if not can_be_interacted_with:
+		# Debug locked cards
+		if has_meta("is_locked") and event is InputEventMouseButton:
+			var mouse_event = event as InputEventMouseButton
+			if mouse_event.button_index == MOUSE_BUTTON_LEFT:
+				print("[LOCKED CARD] Input blocked (locked): ", name, " | pressed=", mouse_event.is_pressed())
 		return
 	
 	if event is InputEventMouseButton:
@@ -378,11 +462,18 @@ func return_to_original() -> void:
 
 func _handle_mouse_pressed() -> void:
 	is_pressed = true
+	
+	# Debug locked cards
+	if has_meta("is_locked"):
+		print("[LOCKED CARD] Mouse pressed: ", name, " | state=", current_state, " | can_interact=", can_be_interacted_with)
+	
 	match current_state:
 		DraggableState.HOVERING:
 			# Only allow drag if the card can be interacted with
 			if can_be_interacted_with:
 				change_state(DraggableState.HOLDING)
+			elif has_meta("is_locked"):
+				print("[LOCKED CARD] Drag blocked (locked): ", name)
 		DraggableState.IDLE:
 			if is_mouse_inside and can_be_interacted_with and _can_start_hovering():
 				change_state(DraggableState.HOLDING)
