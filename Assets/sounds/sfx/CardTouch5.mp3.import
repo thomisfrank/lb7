@@ -2,12 +2,13 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-uid="uid://ws7idpv83rh7"
-valid=false
+uid="uid://r3lnjoukjsbi"
+path="res://.godot/imported/CardTouch5.mp3-f4f5a524d597ca6ea9e8cfd53f5033da.mp3str"
 
 [deps]
 
 source_file="res://Assets/sounds/sfx/CardTouch5.mp3"
+dest_files=["res://.godot/imported/CardTouch5.mp3-f4f5a524d597ca6ea9e8cfd53f5033da.mp3str"]
 
 [params]
 

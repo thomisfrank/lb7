@@ -198,6 +198,12 @@ func on_card_move_done(card: Card) -> void:
 	# Ensure the card is shown face-up in the play area
 	card.show_front = true
 	card.can_be_interacted_with = false
+	
+	# Play card played sound after a small random delay
+	if has_node("/root/SoundManager"):
+		var random_delay = randf_range(0.03, 0.5)
+		await get_tree().create_timer(random_delay).timeout
+		get_node("/root/SoundManager").play_card_played(-2.0)
 
 	# Wait for 0.5 seconds as requested
 	await get_tree().create_timer(0.5).timeout

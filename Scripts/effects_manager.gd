@@ -228,6 +228,10 @@ func execute_draw_effect(played_card: Card, player: String) -> Dictionary:
 	if play_area and play_area.has_card(played_card):
 		play_area.remove_card(played_card)
 	discard_pile.add_card(played_card)
+	
+	# Play single discard sound
+	if has_node("/root/SoundManager"):
+		get_node("/root/SoundManager").play_single_discard(-2.0)
 
 	# 2. Wait for 0.5 seconds
 	await get_tree().create_timer(0.5).timeout
@@ -249,6 +253,10 @@ func execute_draw_effect(played_card: Card, player: String) -> Dictionary:
 		return {"success": false, "message": "Failed to remove card from deck"}
 
 	player_hand_ref.add_card(drawn_card)
+	
+	# Play card touch sound for draw
+	if has_node("/root/SoundManager"):
+		get_node("/root/SoundManager").play_card_touch(-3.0)
 	
 	# 4. Lock the newly drawn card
 	if drawn_card and is_instance_valid(drawn_card) and drawn_card.has_method("lock"):
@@ -515,6 +523,11 @@ func _complete_swap(chosen_card: Card) -> Dictionary:
 	# 1) Move the chosen opponent card into the player's hand area and then add it
 	chosen_card.move(player_target, 0)
 	LOG.log_args(["EffectsManager: moving chosen_card to owner_hand target=", player_target])
+	
+	# Play card touch sound for swap movement
+	if has_node("/root/SoundManager"):
+		get_node("/root/SoundManager").play_card_touch(-2.0)
+	
 	# Wait for the move animation to finish
 	await get_tree().create_timer(0.5).timeout
 	# Add to owner's hand logic (this will snap it precisely into the hand)
@@ -531,6 +544,11 @@ func _complete_swap(chosen_card: Card) -> Dictionary:
 
 	# 2) Now move the pending swap card into the opponent's hand area and then add it
 	pending_swap_card.move(opponent_target, 0)
+	
+	# Play card touch sound for second swap movement
+	if has_node("/root/SoundManager"):
+		get_node("/root/SoundManager").play_card_touch(-2.0)
+	
 	await get_tree().create_timer(0.5).timeout
 	LOG.log_args(["EffectsManager: moving pending_swap_card to other_hand target=", opponent_target])
 	other_hand.add_card(pending_swap_card)

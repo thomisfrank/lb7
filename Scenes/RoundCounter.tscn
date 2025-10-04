@@ -1,5 +1,6 @@
-[gd_scene load_steps=9 format=3 uid="uid://drlqn0gjqk7ma"]
+[gd_scene load_steps=10 format=3 uid="uid://drlqn0gjqk7ma"]
 
+[ext_resource type="Script" path="res://Scripts/round_counter.gd" id="1_a2b3c"]
 [ext_resource type="Texture2D" uid="uid://ds4blade07koo" path="res://Assets/UI/InfoBox.png" id="1_3vyyd"]
 [ext_resource type="FontFile" uid="uid://cd0mg1j1e8pyd" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="2_fegag"]
 [ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="2_r7tqi"]
@@ -26,6 +27,7 @@ anchor_right = 0.2796875
 anchor_bottom = 0.26481482
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_a2b3c")
 metadata/_edit_use_anchors_ = true
 
 [node name="PanelContainer" type="PanelContainer" parent="."]

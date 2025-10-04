@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://p78ndvak2hpt"
-path="res://.godot/imported/ActionCounterFrame.png-579c806f85694e548fa710406cf007a9.ctex"
+uid="uid://c2kmdgyqrjubg"
+path="res://.godot/imported/ButtonPressed.png-2ebe11b53fa724ca776f2fb5163b6017.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/UI/ActionCounterFrame.png"
-dest_files=["res://.godot/imported/ActionCounterFrame.png-579c806f85694e548fa710406cf007a9.ctex"]
+source_file="res://Assets/UI/ButtonPressed.png"
+dest_files=["res://.godot/imported/ButtonPressed.png-2ebe11b53fa724ca776f2fb5163b6017.ctex"]
 
 [params]
 

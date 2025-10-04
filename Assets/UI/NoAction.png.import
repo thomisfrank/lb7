@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bx7cuc4oinduk"
-path="res://.godot/imported/ActionCounterFill.png-2386c1c0db69cfc2ea35923eaa96f4c3.ctex"
+uid="uid://15rgaber0j8r"
+path="res://.godot/imported/NoAction.png-cf30a5f8f6328694a1b1d01bdfff9805.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/UI/ActionCounterFill.png"
-dest_files=["res://.godot/imported/ActionCounterFill.png-2386c1c0db69cfc2ea35923eaa96f4c3.ctex"]
+source_file="res://Assets/UI/NoAction.png"
+dest_files=["res://.godot/imported/NoAction.png-cf30a5f8f6328694a1b1d01bdfff9805.ctex"]
 
 [params]
 

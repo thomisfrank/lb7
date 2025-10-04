@@ -2,12 +2,13 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-uid="uid://dyjsmpnl3sxs1"
-valid=false
+uid="uid://dr603gcsw28a"
+path="res://.godot/imported/SingleDiscard1.mp3-6321bcbf8a8c5ba35326b03f9a81b0c2.mp3str"
 
 [deps]
 
 source_file="res://Assets/sounds/sfx/SingleDiscard1.mp3"
+dest_files=["res://.godot/imported/SingleDiscard1.mp3-6321bcbf8a8c5ba35326b03f9a81b0c2.mp3str"]
 
 [params]
 

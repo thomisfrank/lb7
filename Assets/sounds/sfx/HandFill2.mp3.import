@@ -2,12 +2,13 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-uid="uid://7ou5wb6cuy1l"
-valid=false
+uid="uid://bbofaa6s7s10d"
+path="res://.godot/imported/HandFill2.mp3-52cb19e8a4b290981d3bba794627f541.mp3str"
 
 [deps]
 
 source_file="res://Assets/sounds/sfx/HandFill2.mp3"
+dest_files=["res://.godot/imported/HandFill2.mp3-52cb19e8a4b290981d3bba794627f541.mp3str"]
 
 [params]
 

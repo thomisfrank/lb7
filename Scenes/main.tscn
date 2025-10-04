@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://ctfxrhcbqydwj"]
+[gd_scene load_steps=20 format=3 uid="uid://ctfxrhcbqydwj"]
 
 [ext_resource type="Script" uid="uid://bbejvgriltre2" path="res://Scripts/main.gd" id="1_21xkr"]
 [ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_kry3j"]
@@ -11,8 +11,13 @@
 [ext_resource type="PackedScene" uid="uid://cmwnhwwwiwc82" path="res://Scenes/UI/deck_counter.tscn" id="8_ynf5e"]
 [ext_resource type="PackedScene" path="res://Scenes/play_area.tscn" id="9_hptm8"]
 [ext_resource type="PackedScene" uid="uid://digcvx5ewwoln" path="res://Scenes/info_box_l.tscn" id="10_6iyac"]
-[ext_resource type="PackedScene" path="res://Scenes/game_state_screen.tscn" id="11_d1ilt"]
+[ext_resource type="PackedScene" uid="uid://dvc0c41lxbqbk" path="res://Scenes/game_state_screen.tscn" id="11_d1ilt"]
 [ext_resource type="PackedScene" uid="uid://drlqn0gjqk7ma" path="res://Scenes/RoundCounter.tscn" id="13_fdnlq"]
+[ext_resource type="PackedScene" uid="uid://lvve3f8bafe2" path="res://Scenes/round_total_screen.tscn" id="13_jkdf5"]
+[ext_resource type="Script" uid="uid://bth846rynvsjt" path="res://Scripts/round_total_screen.gd" id="14_b3802"]
+[ext_resource type="PackedScene" uid="uid://beorjeh8ott8h" path="res://Scenes/game_over_screen.tscn" id="14_k12tt"]
+[ext_resource type="PackedScene" uid="uid://ccmgkdpjuqpcq" path="res://Scenes/score_action_panel.tscn" id="15_wsu2k"]
+[ext_resource type="Script" uid="uid://bls7r8mt4l5oq" path="res://Scripts/round_counter.gd" id="16_h1bgf"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0xm2m"]
 shader = ExtResource("1_kry3j")
@@ -31,8 +36,6 @@ shader_parameter/flicker_speed = 2.6950001280125
 [node name="Main" type="Node"]
 script = ExtResource("1_21xkr")
 desired_deck_size = 48
-metadata/_edit_vertical_guides_ = [999.0]
-metadata/_edit_horizontal_guides_ = [578.0]
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="."]
 material = SubResource("ShaderMaterial_0xm2m")
@@ -120,9 +123,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = 1001.0
-offset_top = 527.0
+offset_top = 592.0
 offset_right = 1001.0
-offset_bottom = 527.0
+offset_bottom = 592.0
 
 [node name="InfoBoxL" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("10_6iyac")]
 visible = false
@@ -139,15 +142,47 @@ visibility_layer = 524288
 
 [node name="GameStateLayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport/UILayer"]
 layer = 100
-visible = false
 
 [node name="GameStateScreen" parent="SubViewportContainer/SubViewport/UILayer/GameStateLayer" instance=ExtResource("11_d1ilt")]
+visible = false
+
+[node name="RoundTotalScreen" parent="SubViewportContainer/SubViewport/UILayer/GameStateLayer" instance=ExtResource("13_jkdf5")]
+visible = false
+offset_left = -4.0
+offset_right = -4.0
+scale = Vector2(1.0188206, 1)
+script = ExtResource("14_b3802")
+metadata/_edit_horizontal_guides_ = [248.0, 759.0]
+
+[node name="GameOverScreen" parent="SubViewportContainer/SubViewport/UILayer/GameStateLayer" instance=ExtResource("14_k12tt")]
+visible = false
 
 [node name="RoundCounter" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("13_fdnlq")]
 anchor_left = 0.8666667
 anchor_top = 0.43240747
 anchor_right = 1.001762
 anchor_bottom = 0.560319
+offset_top = -27.000061
 offset_right = 277.61694
-offset_bottom = 147.85553
+offset_bottom = 120.85547
 scale = Vector2(0.4830225, 0.4830225)
+script = ExtResource("16_h1bgf")
+
+[node name="PlayerScoreActionPanel" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("15_wsu2k")]
+anchor_left = 0.0010416667
+anchor_top = 0.7259259
+anchor_right = 0.2607107
+anchor_bottom = 0.9239661
+offset_right = 170.43549
+offset_bottom = 73.11658
+scale = Vector2(0.7452385, 0.7452385)
+
+[node name="OpponentScoreActionPanel2" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("15_wsu2k")]
+unique_name_in_owner = true
+anchor_left = 0.0020833334
+anchor_top = 0.12407407
+anchor_right = 0.26175237
+anchor_bottom = 0.3221143
+offset_right = 170.43546
+offset_bottom = 73.11658
+scale = Vector2(0.7452385, 0.7452385)

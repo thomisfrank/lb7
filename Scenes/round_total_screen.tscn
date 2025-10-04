@@ -1,0 +1,139 @@
+[gd_scene load_steps=12 format=3 uid="uid://lvve3f8bafe2"]
+
+[ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="1_f16sm"]
+[ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="1_omuqu"]
+[ext_resource type="Script" uid="uid://bth846rynvsjt" path="res://Scripts/round_total_screen.gd" id="1_total"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/hand.tscn" id="2_il0f3"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_omuqu"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_omuqu"]
+bg_color = Color(0.17254902, 0.24313726, 0.3137255, 0.50980395)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uuk63"]
+shader = ExtResource("1_omuqu")
+shader_parameter/jitter_rate = 2.50000007125
+shader_parameter/jitter_amount = 0.002000000095
+
+[sub_resource type="LabelSettings" id="LabelSettings_uuk63"]
+font = ExtResource("1_f16sm")
+font_size = 250
+
+[sub_resource type="LabelSettings" id="LabelSettings_ldfk1"]
+font = ExtResource("1_f16sm")
+font_size = 250
+
+[sub_resource type="LabelSettings" id="LabelSettings_il0f3"]
+font = ExtResource("1_f16sm")
+font_size = 150
+
+[sub_resource type="LabelSettings" id="LabelSettings_omuqu"]
+font = ExtResource("1_f16sm")
+font_size = 100
+
+[node name="RoundTotalScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -1.0
+offset_right = 1919.0
+offset_bottom = 1080.0
+script = ExtResource("1_total")
+metadata/_edit_horizontal_guides_ = [284.0, 795.0]
+metadata/_edit_vertical_guides_ = [1737.0]
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(1920, 1080)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_omuqu")
+
+[node name="PlayerRoundTotal" type="Label" parent="Panel"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_uuk63")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.10729167
+anchor_top = 0.14537036
+anchor_right = 0.1890625
+anchor_bottom = 0.37777779
+text = "#"
+label_settings = SubResource("LabelSettings_uuk63")
+metadata/_edit_use_anchors_ = true
+
+[node name="OpponentRoundTotal" type="Label" parent="Panel"]
+material = SubResource("ShaderMaterial_uuk63")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.10364583
+anchor_top = 0.6166667
+anchor_right = 0.18541665
+anchor_bottom = 0.84907407
+offset_right = 3.0517578e-05
+text = "#"
+label_settings = SubResource("LabelSettings_ldfk1")
+metadata/_edit_use_anchors_ = true
+
+[node name="CardManager" parent="Panel" instance=ExtResource("2_omuqu")]
+layout_mode = 0
+
+[node name="OpponentHand" parent="Panel/CardManager" instance=ExtResource("2_il0f3")]
+layout_mode = 0
+offset_left = 574.0
+offset_top = 250.0
+offset_right = 574.0
+offset_bottom = 250.0
+max_hand_size = 4
+max_hand_spread = 1000
+card_hover_distance = 0.0
+cards_interactable = false
+hand_rotation_curve = null
+hand_vertical_curve = null
+align_drop_zone_size_with_current_hand_size = false
+enable_drop_zone = false
+
+[node name="PlayerHand" parent="Panel/CardManager" instance=ExtResource("2_il0f3")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 574.0
+offset_top = 757.0
+offset_right = 574.0
+offset_bottom = 757.0
+max_hand_size = 4
+max_hand_spread = 1000
+card_hover_distance = 0.0
+cards_interactable = false
+hand_rotation_curve = null
+hand_vertical_curve = null
+align_drop_zone_size_with_current_hand_size = false
+enable_drop_zone = false
+
+[node name="WinCondition" type="Label" parent="Panel"]
+material = SubResource("ShaderMaterial_uuk63")
+layout_mode = 0
+offset_left = 1024.0
+offset_top = 205.0
+offset_right = 1614.0
+offset_bottom = 361.0
+text = "You win!"
+label_settings = SubResource("LabelSettings_il0f3")
+
+[node name="PlayerNewScore" type="Label" parent="Panel"]
+material = SubResource("ShaderMaterial_uuk63")
+layout_mode = 0
+offset_left = 1671.0
+offset_top = 233.0
+offset_right = 1734.0
+offset_bottom = 334.0
+text = "#"
+label_settings = SubResource("LabelSettings_omuqu")
+
+[node name="OpponentNewScore2" type="Label" parent="Panel"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_uuk63")
+layout_mode = 0
+offset_left = 1671.0
+offset_top = 740.0
+offset_right = 1734.0
+offset_bottom = 841.0
+text = "#"
+label_settings = SubResource("LabelSettings_omuqu")

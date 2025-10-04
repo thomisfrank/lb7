@@ -1,5 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://dvc0c41lxbqbk"]
+[gd_scene load_steps=6 format=3 uid="uid://dvc0c41lxbqbk"]
 
+[ext_resource type="Script" path="res://Scripts/game_state_screen.gd" id="1_state"]
 [ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="1_lfxdn"]
 [ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="1_to7tk"]
 
@@ -20,6 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_state")
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 custom_minimum_size = Vector2(1920, 1080)

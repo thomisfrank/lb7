@@ -1,0 +1,250 @@
+[gd_scene load_steps=21 format=3 uid="uid://beorjeh8ott8h"]
+
+[ext_resource type="Script" path="res://Scripts/game_over_screen.gd" id="1_gameover"]
+[ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="1_14u15"]
+[ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="1_ek8ke"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_eoghk"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/hand.tscn" id="3_14u15"]
+[ext_resource type="PackedScene" uid="uid://cvjib4et5vg1t" path="res://Scenes/Button.tscn" id="5_j3ryr"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rjluv"]
+shader = ExtResource("1_14u15")
+shader_parameter/jitter_rate = 2.50000007125
+shader_parameter/jitter_amount = 0.002000000095
+
+[sub_resource type="LabelSettings" id="LabelSettings_j3ryr"]
+font = ExtResource("1_ek8ke")
+font_size = 250
+font_color = Color(0.9254902, 0.9411765, 0.94509804, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_rjluv"]
+font = ExtResource("1_ek8ke")
+font_size = 100
+font_color = Color(0.9254902, 0.9411765, 0.94509804, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_gjtdd"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_uylih"]
+font = ExtResource("1_ek8ke")
+font_size = 150
+
+[sub_resource type="LabelSettings" id="LabelSettings_3817r"]
+font = ExtResource("1_ek8ke")
+font_size = 80
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mitgx"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_gs2es"]
+font = ExtResource("1_ek8ke")
+font_size = 75
+
+[sub_resource type="LabelSettings" id="LabelSettings_asocn"]
+font = ExtResource("1_ek8ke")
+font_size = 80
+
+[sub_resource type="LabelSettings" id="LabelSettings_61f6c"]
+font = ExtResource("1_ek8ke")
+font_size = 100
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_uylih"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_xqply"]
+font = ExtResource("1_ek8ke")
+font_size = 100
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_14u15"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_14u15"]
+shader = ExtResource("1_14u15")
+shader_parameter/jitter_rate = 4.50000016625
+shader_parameter/jitter_amount = 0.002000000095
+
+[node name="GameOverScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gameover")
+
+[node name="transparentBG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17254902, 0.24313726, 0.3137255, 0.8627451)
+
+[node name="PlayerStatus" type="Label" parent="transparentBG"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 0
+offset_left = 80.0
+offset_top = 50.0
+offset_right = 923.0
+offset_bottom = 301.0
+text = "You ____"
+label_settings = SubResource("LabelSettings_j3ryr")
+
+[node name="Score" type="HBoxContainer" parent="transparentBG"]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 463.0
+offset_right = 1176.0
+offset_bottom = 614.0
+
+[node name="FinalScoreLabel" type="Label" parent="transparentBG/Score"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "Final score:"
+label_settings = SubResource("LabelSettings_rjluv")
+
+[node name="HSeparator" type="HSeparator" parent="transparentBG/Score"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_gjtdd")
+
+[node name="FinalScore" type="Label" parent="transparentBG/Score"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "# - #"
+label_settings = SubResource("LabelSettings_uylih")
+
+[node name="Stats" type="HBoxContainer" parent="transparentBG"]
+layout_mode = 0
+offset_left = 80.0
+offset_top = 740.0
+offset_right = 813.0
+offset_bottom = 991.0
+
+[node name="StatsLabel" type="Label" parent="transparentBG/Stats"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+size_flags_vertical = 0
+text = "Stats:"
+label_settings = SubResource("LabelSettings_3817r")
+
+[node name="HSeparator2" type="HSeparator" parent="transparentBG/Stats"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/separator = SubResource("StyleBoxEmpty_mitgx")
+
+[node name="StatsToTrack" type="VBoxContainer" parent="transparentBG/Stats"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="SwapStat" type="Label" parent="transparentBG/Stats/StatsToTrack"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "Swaps used"
+label_settings = SubResource("LabelSettings_gs2es")
+
+[node name="DrawStat" type="Label" parent="transparentBG/Stats/StatsToTrack"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "Draws used"
+label_settings = SubResource("LabelSettings_gs2es")
+
+[node name="PassStat" type="Label" parent="transparentBG/Stats/StatsToTrack"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "Passes taken"
+label_settings = SubResource("LabelSettings_gs2es")
+
+[node name="HSeparator" type="HSeparator" parent="transparentBG/Stats"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/separator = SubResource("StyleBoxEmpty_mitgx")
+
+[node name="Numbers" type="VBoxContainer" parent="transparentBG/Stats"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="StatNumber" type="Label" parent="transparentBG/Stats/Numbers"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "#"
+label_settings = SubResource("LabelSettings_asocn")
+
+[node name="StatNumber2" type="Label" parent="transparentBG/Stats/Numbers"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "#"
+label_settings = SubResource("LabelSettings_asocn")
+
+[node name="StatNumber3" type="Label" parent="transparentBG/Stats/Numbers"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "#"
+label_settings = SubResource("LabelSettings_asocn")
+
+[node name="CardManager" parent="transparentBG" instance=ExtResource("2_eoghk")]
+layout_mode = 0
+
+[node name="HandFromBestRound" parent="transparentBG/CardManager" instance=ExtResource("3_14u15")]
+layout_mode = 0
+offset_left = 1112.0
+offset_top = 299.0
+offset_right = 1112.0
+offset_bottom = 299.0
+max_hand_size = 4
+max_hand_spread = 850
+card_face_up = false
+cards_interactable = false
+hand_rotation_curve = null
+hand_vertical_curve = null
+
+[node name="BestRoundLabel" type="HBoxContainer" parent="transparentBG"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 0
+offset_left = 1112.0
+offset_top = 80.0
+offset_right = 1812.0
+offset_bottom = 181.0
+
+[node name="BestRound" type="Label" parent="transparentBG/BestRoundLabel"]
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "Best round:"
+label_settings = SubResource("LabelSettings_61f6c")
+
+[node name="HSeparator" type="HSeparator" parent="transparentBG/BestRoundLabel"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_uylih")
+
+[node name="BestRoundScore" type="Label" parent="transparentBG/BestRoundLabel"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_rjluv")
+layout_mode = 2
+text = "#"
+label_settings = SubResource("LabelSettings_xqply")
+
+[node name="Buttons" type="VBoxContainer" parent="transparentBG"]
+layout_mode = 0
+offset_left = 1209.0
+offset_top = 658.00006
+offset_right = 1410.0
+offset_bottom = 775.00006
+scale = Vector2(2.5600004, 2.5600004)
+
+[node name="PlayAgainButton" parent="transparentBG/Buttons" instance=ExtResource("5_j3ryr")]
+layout_mode = 2
+
+[node name="VSeparator" type="VSeparator" parent="transparentBG/Buttons"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_14u15")
+
+[node name="QuitButton" type="Button" parent="transparentBG/Buttons"]
+material = SubResource("ShaderMaterial_14u15")
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_ek8ke")
+theme_override_font_sizes/font_size = 36
+text = "Quit"
+flat = true

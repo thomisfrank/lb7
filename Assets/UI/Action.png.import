@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c4e23wykpxu73"
-path="res://.godot/imported/ScoreCounter.png-d9e13a9ffbac207fa3e30a1850a56cd8.ctex"
+uid="uid://ru6uk85f3w7k"
+path="res://.godot/imported/Action.png-3f83d7fadbe8beee6c691b804d279b83.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/UI/ScoreCounter.png"
-dest_files=["res://.godot/imported/ScoreCounter.png-d9e13a9ffbac207fa3e30a1850a56cd8.ctex"]
+source_file="res://Assets/UI/Action.png"
+dest_files=["res://.godot/imported/Action.png-3f83d7fadbe8beee6c691b804d279b83.ctex"]
 
 [params]
 

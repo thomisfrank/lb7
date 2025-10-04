@@ -148,6 +148,9 @@ func _enter_state(state: DraggableState, from_state: DraggableState) -> void:
 		DraggableState.HOVERING:
 			z_index = stored_z_index + CardFrameworkSettings.VISUAL_DRAG_Z_OFFSET
 			_start_hover_animation()
+			# Play card touch sound on hover
+			if has_node("/root/SoundManager"):
+				get_node("/root/SoundManager").play_card_touch(-5.0)
 			
 		DraggableState.HOLDING:
 			# Preserve hover position if transitioning from HOVERING state
@@ -158,6 +161,9 @@ func _enter_state(state: DraggableState, from_state: DraggableState) -> void:
 			current_holding_mouse_position = get_local_mouse_position()
 			z_index = stored_z_index + CardFrameworkSettings.VISUAL_DRAG_Z_OFFSET
 			rotation = 0
+			# Play card touch sound when picking up
+			if has_node("/root/SoundManager"):
+				get_node("/root/SoundManager").play_card_touch(-3.0)
 			
 		DraggableState.MOVING:
 			# Stop hover animations and ignore input during programmatic movement

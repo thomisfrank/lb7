@@ -11,6 +11,16 @@ const CF_SETTINGS = preload("res://Scripts/CardFramework/Core/card_framework_set
 @onready var deck: Pile = cm.get_node("Deck") if cm else null
 @onready var player_hand: Hand = cm.get_node("PlayerHand") if cm else null
 @onready var opponent_hand: Hand = cm.get_node("OpponentHand") if cm else null
+@onready var player_score_panel: Control = $SubViewportContainer/SubViewport/UILayer/PlayerScoreActionPanel
+@onready var opponent_score_panel: Control = %OpponentScoreActionPanel2
+@onready var round_counter: Control = $SubViewportContainer/SubViewport/UILayer/RoundCounter
+@onready var game_state_screen: Control = $SubViewportContainer/SubViewport/UILayer/GameStateLayer/GameStateScreen
+@onready var round_total_screen: Control = $SubViewportContainer/SubViewport/UILayer/GameStateLayer/RoundTotalScreen
+@onready var game_over_screen: Control = $SubViewportContainer/SubViewport/UILayer/GameStateLayer/GameOverScreen
+
+# RoundManager
+var round_manager: Node
+
 @export var desired_deck_size: int = 0 # 0 = create one of each available card
 @export var debug_deck_counter: bool = false
 
@@ -47,6 +57,33 @@ func _ready():
 	
 	if deck_counter:
 		deck_counter_label = deck_counter.get_node_or_null("Box/Count")
+
+	# Initialize score panels
+	if player_score_panel:
+		player_score_panel.set_is_player_panel(true)
+	if opponent_score_panel:
+		opponent_score_panel.set_is_player_panel(false)
+
+	# Initialize RoundManager
+	var RoundManagerScript = preload("res://Scripts/round_manager.gd")
+	round_manager = RoundManagerScript.new()
+	add_child(round_manager)
+	
+	# Pass all references to RoundManager (done here so @onready vars are available)
+	var discard_pile_ref = cm.get_node_or_null("DiscardPile") if cm else null
+	round_manager.initialize(
+		round_counter,
+		game_state_screen,
+		round_total_screen,
+		game_over_screen,
+		player_score_panel,
+		opponent_score_panel,
+		cm,
+		deck,
+		player_hand,
+		opponent_hand,
+		discard_pile_ref
+	)
 
 	# Defer card creation to ensure all nodes and resources are fully initialized.
 	call_deferred("_create_test_cards")
@@ -153,9 +190,20 @@ func _create_test_cards():
 
 	# Update deck counter after all cards are created
 	_update_deck_counter()
-	call_deferred("_deal_cards")
+	
+	# Start the round manager now that the deck is ready
+	if round_manager:
+		call_deferred("_start_round_manager")
+
+func _start_round_manager():
+	if round_manager and round_manager.has_method("start_game"):
+		round_manager.start_game()
 
 func _deal_cards():
+	# This function is deprecated - RoundManager now handles dealing
+	# Keeping it for backward compatibility but it won't be called
+	return
+	
 	if not deck or not player_hand or not opponent_hand:
 		push_error("Deck or hands not found for dealing.")
 		return
@@ -165,12 +213,20 @@ func _deal_cards():
 	for card in player_cards:
 		if deck.remove_card(card):
 			player_hand.add_card(card)
+	
+	# Play hand fill sound for player
+	if has_node("/root/SoundManager"):
+		get_node("/root/SoundManager").play_hand_fill()
 
 	# Deal 4 cards to opponent
 	var opponent_cards = deck.get_top_cards(4)
 	for card in opponent_cards:
 		if deck.remove_card(card):
 			opponent_hand.add_card(card)
+	
+	# Play hand fill sound for opponent
+	if has_node("/root/SoundManager"):
+		get_node("/root/SoundManager").play_hand_fill()
 	
 	# Update deck counter after dealing
 	_update_deck_counter()
