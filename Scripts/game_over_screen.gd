@@ -24,9 +24,12 @@ func _ready() -> void:
 	visible = false
 	modulate.a = 0.0
 	
+	# Allow this screen to process even when game tree is paused
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	# Set button text
-	if play_again_button and play_again_button.has_node("Label"):
-		play_again_button.get_node("Label").text = "Play Again"
+	if play_again_button and play_again_button.has_node("AspectRatioContainer/Label"):
+		play_again_button.get_node("AspectRatioContainer/Label").text = "Play Again"
 
 
 ## Shows the game over screen with all game stats
@@ -40,19 +43,63 @@ func show_game_over(
 	draws_used: int,
 	passes_taken: int
 ) -> void:
-	print("GAME_OVER: show_game_over called - player_won: ", player_won, " final_score: ", player_final_score, "-", opponent_final_score)
-	print("GAME_OVER: best_round_score: ", best_round_score, " best_round_cards: ", best_round_hand_cards.size())
-	
+	_show_game_over_internal(
+		player_won,
+		player_final_score,
+		opponent_final_score,
+		best_round_score,
+		best_round_hand_cards,
+		swaps_used,
+		draws_used,
+		passes_taken,
+		false  # not surrendered
+	)
+
+
+## Shows the game over screen when player surrenders
+func show_game_over_surrender(
+	player_final_score: int,
+	opponent_final_score: int,
+	best_round_score: int,
+	best_round_hand_cards: Array,
+	swaps_used: int,
+	draws_used: int,
+	passes_taken: int
+) -> void:
+	_show_game_over_internal(
+		false,  # player didn't win (surrendered)
+		player_final_score,
+		opponent_final_score,
+		best_round_score,
+		best_round_hand_cards,
+		swaps_used,
+		draws_used,
+		passes_taken,
+		true  # surrendered
+	)
+
+
+## Internal method to show game over screen
+func _show_game_over_internal(
+	player_won: bool,
+	player_final_score: int,
+	opponent_final_score: int,
+	best_round_score: int,
+	best_round_hand_cards: Array,
+	swaps_used: int,
+	draws_used: int,
+	passes_taken: int,
+	surrendered: bool
+) -> void:
+	# Early exit if already animating
 	if is_animating:
-		print("GAME_OVER: Already animating, skipping")
 		return
 	
 	is_animating = true
 	best_round_cards = best_round_hand_cards.duplicate()
-	print("GAME_OVER: Starting game over screen animation")
 	
 	# Set win/loss status
-	_set_player_status(player_won, player_final_score, opponent_final_score)
+	_set_player_status(player_won, player_final_score, opponent_final_score, surrendered)
 	
 	# Set final score
 	if final_score_label:
@@ -80,14 +127,16 @@ func show_game_over(
 	fade_tween.tween_callback(_start_card_reveals)
 
 
-## Sets the player status text based on win/loss/tie
-func _set_player_status(_player_won: bool, player_score: int, opponent_score: int) -> void:
+## Sets the player status text based on win/loss/tie/surrender
+func _set_player_status(_player_won: bool, player_score: int, opponent_score: int, surrendered: bool = false) -> void:
 	if not player_status_label:
 		return
 	
 	var status_text: String
 	
-	if player_score > opponent_score:
+	if surrendered:
+		status_text = "You gave up!"
+	elif player_score > opponent_score:
 		status_text = "You Win!"
 	elif opponent_score > player_score:
 		status_text = "You've lost..."
@@ -99,16 +148,12 @@ func _set_player_status(_player_won: bool, player_score: int, opponent_score: in
 
 ## Populates the display hand with copies of the best round cards
 func _populate_display_hand() -> void:
-	print("GAME_OVER: _populate_display_hand called - best_round_hand exists: ", best_round_hand != null)
-	print("GAME_OVER: best_round_cards count: ", best_round_cards.size())
-	
+	# Populate if we have a destination hand and cards
 	if not best_round_hand or best_round_cards.is_empty():
-		print("GAME_OVER: No hand or no cards, returning")
 		return
 	
 	# Clear any existing cards in the display hand
 	if "_held_cards" in best_round_hand:
-		print("GAME_OVER: Clearing existing cards from display hand")
 		for card in best_round_hand._held_cards.duplicate():
 			if card:
 				card.queue_free()
@@ -121,6 +166,13 @@ func _populate_display_hand() -> void:
 			# Create a duplicate card node
 			var card_copy = original_card.duplicate()
 			card_copy.modulate.a = 0.0  # Start hidden
+			
+			# Ensure card shows front face
+			card_copy.show_front = true
+			
+			# Unlock the card copy to remove any lock overlays from gameplay
+			if card_copy.has_method("unlock"):
+				card_copy.unlock()
 			
 			# Add to display hand
 			if best_round_hand.has_node("Cards"):

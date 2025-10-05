@@ -4,6 +4,8 @@ shader_type canvas_item;
 uniform float jitter_rate : hint_range(1.0, 30.0) = 8.0;
 // jitter_amount: Amount of text jitter
 uniform float jitter_amount : hint_range(0.0, 0.02) = 0.003;
+// animation_speed: Multiplier for animation (set to 0.0 to freeze)
+uniform float animation_speed : hint_range(0.0, 2.0) = 1.0;
 
 // Hash function: gives more "random"-looking values than plain sin
 float hash(float n) {
@@ -11,7 +13,7 @@ float hash(float n) {
 }
 
 void fragment() {
-    float step = TIME * jitter_rate;
+    float step = TIME * jitter_rate * animation_speed;
 
     // Frame steps
     float i0 = floor(step);

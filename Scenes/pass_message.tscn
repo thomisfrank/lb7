@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://bvf3ukgvgwmwq"]
+
+[ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="1_8to1w"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_n26e8"]
+font = ExtResource("1_8to1w")
+font_size = 48
+
+[node name="PassMessage" type="Control"]
+layout_mode = 3
+anchor_right = 0.16458334
+anchor_bottom = 0.055555556
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Opponent passes"
+label_settings = SubResource("LabelSettings_n26e8")

@@ -140,6 +140,13 @@ func _exit_tree() -> void:
 ## @param card: The card to add
 ## @param index: Position to insert (-1 for end)
 func add_card(card: Card, index: int = -1) -> void:
+	# Safety check: if this is a Hand, enforce max_hand_size
+	if self is Hand:
+		var hand = self as Hand
+		if _held_cards.size() >= hand.max_hand_size:
+			push_error("CardContainer: Cannot add card - hand already at max size (%d/%d)" % [_held_cards.size(), hand.max_hand_size])
+			return
+	
 	if index == -1:
 		_assign_card_to_container(card)
 	else:

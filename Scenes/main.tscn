@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://ctfxrhcbqydwj"]
+[gd_scene load_steps=32 format=3 uid="uid://ctfxrhcbqydwj"]
 
 [ext_resource type="Script" uid="uid://bbejvgriltre2" path="res://Scripts/main.gd" id="1_21xkr"]
 [ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_kry3j"]
@@ -16,6 +16,16 @@
 [ext_resource type="PackedScene" uid="uid://lvve3f8bafe2" path="res://Scenes/round_total_screen.tscn" id="13_jkdf5"]
 [ext_resource type="PackedScene" uid="uid://beorjeh8ott8h" path="res://Scenes/game_over_screen.tscn" id="14_k12tt"]
 [ext_resource type="PackedScene" uid="uid://ccmgkdpjuqpcq" path="res://Scenes/score_action_panel.tscn" id="15_wsu2k"]
+[ext_resource type="PackedScene" uid="uid://bvf3ukgvgwmwq" path="res://Scenes/pass_message.tscn" id="17_h1bgf"]
+[ext_resource type="Texture2D" uid="uid://qqxpeb161ekh" path="res://Assets/UI/Options.png" id="18_hibaj"]
+[ext_resource type="Texture2D" uid="uid://dlb5f3p8dl0uv" path="res://Assets/UI/OptionsPressed.png" id="19_pdsj5"]
+[ext_resource type="Texture2D" uid="uid://u5l4as5unag4" path="res://Assets/UI/OptionsHover.png" id="20_ee4r6"]
+[ext_resource type="PackedScene" uid="uid://6ef64w6o06wq" path="res://Scenes/settingsPanel.tscn" id="21_cbgmd"]
+[ext_resource type="FontFile" uid="uid://cd0mg1j1e8pyd" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="22_1w6v2"]
+[ext_resource type="Texture2D" uid="uid://dcsl5jlrbntjk" path="res://Assets/animation_slides/flag/Flag0.png" id="23_ueoa1"]
+[ext_resource type="Texture2D" uid="uid://nr2vpa18blsq" path="res://Assets/animation_slides/flag/Flag1.png" id="24_6vcvc"]
+[ext_resource type="Texture2D" uid="uid://tw625hyheexg" path="res://Assets/animation_slides/flag/Flag2.png" id="25_7k868"]
+[ext_resource type="Texture2D" uid="uid://cv7aspra6ucu6" path="res://Assets/animation_slides/flag/Flag3.png" id="26_hpc6h"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0xm2m"]
 shader = ExtResource("1_kry3j")
@@ -30,6 +40,27 @@ shader_parameter/bloom_threshold = 0.4370000207575
 shader_parameter/bloom_intensity = 0.138000006555
 shader_parameter/flicker_amount = 0.21600001026
 shader_parameter/flicker_speed = 2.6950001280125
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kltya"]
+bg_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+border_width_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e08e2"]
+bg_color = Color(0.15294118, 0.68235296, 0.3764706, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_neg2b"]
+bg_color = Color(0.90588236, 0.29803923, 0.23529412, 1)
+
+[sub_resource type="AnimatedTexture" id="AnimatedTexture_r33sp"]
+frames = 4
+speed_scale = 2.0
+frame_0/texture = ExtResource("23_ueoa1")
+frame_1/texture = ExtResource("24_6vcvc")
+frame_1/duration = 1.0
+frame_2/texture = ExtResource("25_7k868")
+frame_2/duration = 1.0
+frame_3/texture = ExtResource("26_hpc6h")
+frame_3/duration = 1.0
 
 [node name="Main" type="Node"]
 script = ExtResource("1_21xkr")
@@ -132,14 +163,17 @@ layout_mode = 1
 offset_top = -100.0
 offset_bottom = -100.0
 
-[node name="UILayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+[node name="BackgroundLayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
 layer = -1
 
-[node name="backgrounds" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("3_344ge")]
+[node name="backgrounds" parent="SubViewportContainer/SubViewport/BackgroundLayer" instance=ExtResource("3_344ge")]
 visibility_layer = 524288
 
+[node name="UILayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+layer = 0
+
 [node name="GameStateLayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport/UILayer"]
-layer = 100
+layer = 10
 
 [node name="GameStateScreen" parent="SubViewportContainer/SubViewport/UILayer/GameStateLayer" instance=ExtResource("11_d1ilt")]
 visible = false
@@ -149,11 +183,10 @@ visible = false
 offset_left = -4.0
 offset_right = -4.0
 scale = Vector2(1.0188206, 1)
-card_reveal_delay = 1.5
-card_fade_in_duration = 0.8
-win_condition_delay = 2.0
-score_count_duration = 2.0
-final_score_delay = 1.0
+card_reveal_delay = 0.5
+card_fade_in_duration = 0.5
+win_condition_delay = 0.8
+final_score_delay = 0.6
 metadata/_edit_horizontal_guides_ = [248.0, 759.0]
 
 [node name="GameOverScreen" parent="SubViewportContainer/SubViewport/UILayer/GameStateLayer" instance=ExtResource("14_k12tt")]
@@ -187,3 +220,44 @@ anchor_bottom = 0.3221143
 offset_right = 170.43546
 offset_bottom = 73.11658
 scale = Vector2(0.7452385, 0.7452385)
+
+[node name="PassMessage" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("17_h1bgf")]
+visible = false
+anchor_left = 0.053125
+anchor_top = 0.4861111
+anchor_right = 0.21770833
+anchor_bottom = 0.5416667
+
+[node name="OptionsButton" type="TextureButton" parent="SubViewportContainer/SubViewport/UILayer"]
+z_index = 4096
+offset_left = 1675.0001
+offset_top = 876.0
+offset_right = 1801.0001
+offset_bottom = 1002.0
+scale = Vector2(0.6399902, 0.6399902)
+texture_normal = ExtResource("18_hibaj")
+texture_pressed = ExtResource("19_pdsj5")
+texture_hover = ExtResource("20_ee4r6")
+
+[node name="Settings Panel" parent="SubViewportContainer/SubViewport/UILayer/OptionsButton" instance=ExtResource("21_cbgmd")]
+visible = false
+layout_mode = 1
+anchor_left = -3.0754437
+anchor_top = -5.816061
+anchor_right = -2.6947148
+anchor_bottom = -4.901246
+
+[node name="SurrenderButton" type="Button" parent="SubViewportContainer/SubViewport/UILayer/OptionsButton/Settings Panel"]
+layout_mode = 0
+offset_left = 259.37906
+offset_top = -203.12814
+offset_right = 2158.4524
+offset_bottom = 294.87186
+scale = Vector2(0.2455685, 0.25196332)
+theme_override_fonts/font = ExtResource("22_1w6v2")
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_kltya")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_e08e2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_neg2b")
+text = "Give up"
+icon = SubResource("AnimatedTexture_r33sp")

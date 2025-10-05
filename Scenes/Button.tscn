@@ -32,13 +32,16 @@ scale = Vector2(2, 2)
 theme_override_styles/panel = SubResource("StyleBoxEmpty_20rfi")
 metadata/_edit_use_anchors_ = true
 
-[node name="TextureButton" type="TextureButton" parent="."]
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+layout_mode = 2
+
+[node name="TextureButton" type="TextureButton" parent="AspectRatioContainer"]
 layout_mode = 2
 texture_normal = ExtResource("1_8bxxr")
 texture_pressed = ExtResource("2_5xx2a")
 texture_hover = ExtResource("3_kbgbk")
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="AspectRatioContainer"]
 texture_filter = 1
 material = SubResource("ShaderMaterial_5eqqv")
 layout_mode = 2

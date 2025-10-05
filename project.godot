@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="lb7"
-run/main_scene="uid://ctfxrhcbqydwj"
+run/main_scene="res://Scenes/GameStartScreen.tscn"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -19,6 +19,8 @@ config/icon="res://icon.svg"
 
 EffectsManager="*res://Scripts/effects_manager.gd"
 SoundManager="*res://Scripts/SoundManager.gd"
+SettingsManager="*res://Scripts/settings_manager.gd"
+DevInputTracer="*res://Scripts/dev_input_tracer.gd"
 
 [display]
 

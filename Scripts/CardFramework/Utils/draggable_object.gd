@@ -29,6 +29,12 @@
 class_name DraggableObject
 extends Control
 
+## Helper to call the project's autoload logger (if present).
+func _log_tracking(args: Array) -> void:
+	var _l = get_node_or_null("/root/LOG")
+	if _l and _l.has_method("tracking_args"):
+		_l.tracking_args(args)
+
 # Enums
 ## Enumeration of possible interaction states for the draggable object.
 enum DraggableState {
@@ -132,7 +138,7 @@ func change_state(new_state: DraggableState) -> bool:
 	# Enter new state
 	# Debug: log state transitions for tracing locked/interaction issues
 	var is_locked = has_meta("is_locked")
-	print("[STATE] ", name, ": ", old_state, " -> ", new_state, " | can_be_interacted_with=", can_be_interacted_with, " | is_locked=", is_locked)
+	_log_tracking(["[STATE]", name, ":", old_state, "->", new_state, "| can_be_interacted_with=", can_be_interacted_with, "| is_locked=", is_locked])
 	_enter_state(new_state, old_state)
 	
 	return true
@@ -354,7 +360,7 @@ func _on_mouse_enter() -> void:
 	# Debug locked cards
 	var is_locked = has_meta("is_locked")
 	if is_locked:
-		print("[LOCKED CARD] Mouse entered: ", name, " | can_interact=", can_be_interacted_with, " | is_locked=", is_locked)
+		_log_tracking(["[LOCKED CARD] Mouse entered:", name, "| can_interact=", can_be_interacted_with, "| is_locked=", is_locked])
 	
 	# Check if hovering is allowed:
 	# - Must pass custom hover conditions (_can_start_hovering)
@@ -362,22 +368,22 @@ func _on_mouse_enter() -> void:
 	# - Must be topmost at mouse position to prevent hover on cards behind others
 	if not _can_start_hovering():
 		if is_locked:
-			print("[LOCKED CARD] Failed _can_start_hovering: ", name)
+			_log_tracking(["[LOCKED CARD] Failed _can_start_hovering:", name])
 		return
 	
 	# Allow hover for: normal interactive cards, selection-enabled cards, or locked cards
 	if not (can_be_interacted_with or has_meta("selection_enabled") or is_locked):
 		if is_locked:
-			print("[LOCKED CARD] Failed interaction check: ", name)
+			_log_tracking(["[LOCKED CARD] Failed interaction check:", name])
 		return
 	
 	if not _is_topmost_at_mouse():
 		if is_locked:
-			print("[LOCKED CARD] Not topmost: ", name)
+			_log_tracking(["[LOCKED CARD] Not topmost:", name])
 		return
 	
 	if is_locked:
-		print("[LOCKED CARD] ✓ Entering HOVERING state: ", name)
+		_log_tracking(["[LOCKED CARD] ✓ Entering HOVERING state:", name])
 	
 	change_state(DraggableState.HOVERING)
 
@@ -395,7 +401,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		if event is InputEventMouseButton:
 			var mouse_event = event as InputEventMouseButton
 			if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.is_pressed():
-				print("[LOCKED CARD] Input blocked by guard (is_locked): ", name)
+				_log_tracking(["[LOCKED CARD] Input blocked by guard (is_locked):", name])
 		return
 
 	if not can_be_interacted_with:
@@ -403,7 +409,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		if has_meta("is_locked") and event is InputEventMouseButton:
 			var mouse_event = event as InputEventMouseButton
 			if mouse_event.button_index == MOUSE_BUTTON_LEFT:
-				print("[LOCKED CARD] Input blocked (locked): ", name, " | pressed=", mouse_event.is_pressed())
+				_log_tracking(["[LOCKED CARD] Input blocked (locked):", name, "| pressed=", mouse_event.is_pressed()])
 		return
 	
 	if event is InputEventMouseButton:
@@ -471,7 +477,7 @@ func _handle_mouse_pressed() -> void:
 	
 	# Debug locked cards
 	if has_meta("is_locked"):
-		print("[LOCKED CARD] Mouse pressed: ", name, " | state=", current_state, " | can_interact=", can_be_interacted_with)
+		_log_tracking(["[LOCKED CARD] Mouse pressed:", name, "| state=", current_state, "| can_interact=", can_be_interacted_with])
 	
 	match current_state:
 		DraggableState.HOVERING:
@@ -479,7 +485,7 @@ func _handle_mouse_pressed() -> void:
 			if can_be_interacted_with:
 				change_state(DraggableState.HOLDING)
 			elif has_meta("is_locked"):
-				print("[LOCKED CARD] Drag blocked (locked): ", name)
+				_log_tracking(["[LOCKED CARD] Drag blocked (locked):", name])
 		DraggableState.IDLE:
 			if is_mouse_inside and can_be_interacted_with and _can_start_hovering():
 				change_state(DraggableState.HOLDING)

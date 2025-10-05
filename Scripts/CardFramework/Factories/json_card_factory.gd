@@ -82,11 +82,11 @@ func create_card(card_name: String, target: CardContainer) -> Card:
 		return _create_card_node(card_info.name, icon_texture, target, card_info)
 	else:
 		# Load card data on-demand (slower but supports dynamic loading)
-		LOG.log_args(["Loading card info for:", card_name, " from:", card_info_dir])
+		LOG.tracking_args(["Loading card info for:", card_name, " from:", card_info_dir])
 		var card_info = _load_card_info(card_name)
 		if card_info == null or card_info == {}:
 			push_error("Card info not found for card: %s" % card_name)
-			LOG.log_args(["Checked path:", card_info_dir + "/" + card_name + ".json"]) 
+			LOG.tracking_args(["Checked path:", card_info_dir + "/" + card_name + ".json"]) 
 			return null
 
 		# Load icon texture if specified
@@ -104,7 +104,7 @@ func create_card(card_name: String, target: CardContainer) -> Card:
 ## Significantly improves card creation performance by eliminating file I/O during gameplay.
 ## Should be called during game initialization or loading screens.
 func preload_card_data() -> void:
-	LOG.log_args(["preload_card_data called with card_info_dir:", card_info_dir])
+	LOG.tracking_args(["preload_card_data called with card_info_dir:", card_info_dir])
 	var dir = DirAccess.open(card_info_dir)
 	if dir == null:
 		push_error("Failed to open directory: %s" % card_info_dir)
@@ -139,7 +139,7 @@ func preload_card_data() -> void:
 			"info": card_info,
 			"texture": icon_texture
 		}
-		LOG.log_args(["Preloaded card data:", preloaded_cards[card_name]])
+		LOG.tracking_args(["Preloaded card data:", preloaded_cards[card_name]])
 		
 		file_name = dir.get_next()
 
@@ -189,7 +189,7 @@ func _create_card_node(card_name: String, icon_texture: Texture2D, target: CardC
 	
 	# Validate container can accept this card
 	if !target._card_can_be_added([card]):
-		LOG.log_args(["Card cannot be added:", card_name])
+		LOG.tracking_args(["Card cannot be added:", card_name])
 		card.queue_free()
 		return null
 	
@@ -206,13 +206,13 @@ func _create_card_node(card_name: String, icon_texture: Texture2D, target: CardC
 
 	# Always set up the standardized back face (Back.json) so the logo/frame
 	# is applied for all cards, including the dedicated "Back" card.
-	LOG.log_args(["Setting up back face for card:", card_info.get("name", "unknown")])
+	LOG.tracking_args(["Setting up back face for card:", card_info.get("name", "unknown")])
 	var back_data = _load_card_info("Back")
 	if back_data != null and back_data != {}:
-		LOG.log_args(["Loaded back data:", back_data])
+		LOG.tracking_args(["Loaded back data:", back_data])
 		card.setup_card_back(back_data)
 	else:
-		LOG.log("Failed to load Back.json data")
+		LOG.tracking("Failed to load Back.json data")
 
 	# Finally register card with the container's logic
 	target.add_card(card)

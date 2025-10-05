@@ -7,6 +7,10 @@ class_name PlayArea
 var is_card_being_dragged: bool = false
 var _drop_setup_attempts: int = 0
 var _background: TextureRect = null  # Reference to the visual background
+var current_player_name: String = "player"
+
+func set_current_player(player_name: String):
+	current_player_name = player_name
 
 # Helper to compute combined ancestor scale for a node (excluding the node itself)
 func _compute_combined_ancestor_scale(node: Node) -> Vector2:
@@ -187,6 +191,10 @@ func on_card_move_done(card: Card) -> void:
 	if card.card_container != self:
 		return
 	
+	# This is a guard against re-triggering effects for AI turns, which are handled explicitly.
+	if current_player_name == "opponent":
+		return
+
 	# Check if this card has already had its effect triggered (use metadata flag)
 	if card.has_meta("playarea_effect_triggered"):
 		LOG.log_args(["PlayArea: on_card_move_done - effect already triggered for card=", card.name, ", ignoring"])
@@ -211,7 +219,7 @@ func on_card_move_done(card: Card) -> void:
 	# Notify EffectsManager if available
 	if has_node("/root/EffectsManager"):
 		var effects_manager = get_node("/root/EffectsManager")
-		await effects_manager.execute_card_effect(card, "player")
+		await effects_manager.execute_card_effect(card, current_player_name)
 		# Clean up the flag after effect completes
 		if card and card.has_meta("playarea_effect_triggered"):
 			card.remove_meta("playarea_effect_triggered")

@@ -1,0 +1,122 @@
+[gd_scene load_steps=14 format=3 uid="uid://td7e7v2vm2wj"]
+
+[ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_akxvb"]
+[ext_resource type="Script" uid="uid://b6veq26su6ju8" path="res://Scripts/game_start_screen.gd" id="1_game_start"]
+[ext_resource type="Script" uid="uid://p7kttis5k3yg" path="res://Scripts/vfx_aware_label.gd" id="1_vfx_aware"]
+[ext_resource type="PackedScene" uid="uid://2gbx8t47wulx" path="res://Scenes/UI/backgrounds.tscn" id="2_fdmwx"]
+[ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="3_1kqsy"]
+[ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="4_f8dg7"]
+[ext_resource type="PackedScene" uid="uid://cvjib4et5vg1t" path="res://Scenes/Button.tscn" id="5_bvuso"]
+[ext_resource type="PackedScene" uid="uid://6ef64w6o06wq" path="res://Scenes/settingsPanel.tscn" id="6_f8dg7"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_oy2lu"]
+shader = ExtResource("1_akxvb")
+shader_parameter/pixel_size = 5.4830002129425
+shader_parameter/scanline_darkness = 0.166000007885
+shader_parameter/scanline_spacing = 3.530000120175
+shader_parameter/curvature_amount = 0.13200000627
+shader_parameter/aberration_amount = 0.00400000019
+shader_parameter/noise_amount = 0.150000007125
+shader_parameter/overlay_strength = 0.206000009785
+shader_parameter/bloom_threshold = 0.4370000207575
+shader_parameter/bloom_intensity = 0.138000006555
+shader_parameter/flicker_amount = 0.21600001026
+shader_parameter/flicker_speed = 2.6950001280125
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7qwbu"]
+shader = ExtResource("3_1kqsy")
+shader_parameter/jitter_rate = 8.0
+shader_parameter/jitter_amount = 0.003
+shader_parameter/animation_speed = 1.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_s0o2v"]
+font = ExtResource("4_f8dg7")
+font_size = 150
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1kqsy"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f8dg7"]
+
+[node name="GameStart" type="Node"]
+script = ExtResource("1_game_start")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+material = SubResource("ShaderMaterial_oy2lu")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="UILayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+layer = -1
+
+[node name="backgrounds" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("2_fdmwx")]
+visibility_layer = 524288
+
+[node name="ColorOverlay" type="ColorRect" parent="SubViewportContainer/SubViewport/UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17254902, 0.24313726, 0.3137255, 0.6392157)
+metadata/_edit_use_anchors_ = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SubViewportContainer/SubViewport/UILayer"]
+custom_minimum_size = Vector2(1920, 1080)
+offset_left = -1.0
+offset_top = -1.0
+offset_right = 1919.0
+offset_bottom = 1079.0
+alignment = 1
+
+[node name="Title" type="Label" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer"]
+material = SubResource("ShaderMaterial_7qwbu")
+layout_mode = 2
+text = "Low
+&
+Behold"
+label_settings = SubResource("LabelSettings_s0o2v")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("1_vfx_aware")
+
+[node name="VSeparator2" type="VSeparator" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_1kqsy")
+
+[node name="StartButton" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer" instance=ExtResource("5_bvuso")]
+layout_mode = 2
+
+[node name="VSeparator" type="VSeparator" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_f8dg7")
+
+[node name="Settings" type="Button" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9254902, 0.9411765, 0.94509804, 1)
+theme_override_colors/font_pressed_color = Color(0.15294118, 0.68235296, 0.3764706, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.94509804, 0.76862746, 0.05882353, 1)
+theme_override_fonts/font = ExtResource("4_f8dg7")
+theme_override_font_sizes/font_size = 50
+text = "-- Settings --"
+flat = true
+
+[node name="Settings Panel" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("6_f8dg7")]
+visible = false
+offset_left = 584.0
+offset_top = 78.0
+offset_right = 584.0
+offset_bottom = 78.0

@@ -32,6 +32,14 @@ func _ready():
 	if randomize_on_ready:
 		_find_and_apply() # Apply random background
 	get_tree().connect("node_added", Callable(self, "_on_node_added"))
+	
+	# Listen for visual effects changes
+	if has_node("/root/SettingsManager"):
+		var settings_mgr = get_node("/root/SettingsManager")
+		if settings_mgr and settings_mgr.has_signal("visual_effects_changed"):
+			settings_mgr.visual_effects_changed.connect(_on_visual_effects_changed)
+			# Apply current VFX state
+			_apply_vfx_to_all_backgrounds(settings_mgr.visual_effects_enabled)
 
 
 # Called when a new node is added to the scene tree.
@@ -163,3 +171,27 @@ func _apply_random_effects(target_texture: TextureRect) -> void:
 	if random_flip:
 		target_texture.flip_h = (randi() % 2 == 0)
 		target_texture.flip_v = (randi() % 2 == 0)
+
+
+## Called when visual effects setting changes
+func _on_visual_effects_changed(enabled: bool) -> void:
+	_apply_vfx_to_all_backgrounds(enabled)
+
+
+## Apply VFX state to all background shaders
+func _apply_vfx_to_all_backgrounds(enabled: bool) -> void:
+	var bg_node = _find_backgrounds_node()
+	if not bg_node:
+		return
+	
+	var landscape = bg_node.get_node_or_null("Landscape")
+	if not landscape:
+		return
+	
+	for child in landscape.get_children():
+		if child is TextureRect and child.material is ShaderMaterial:
+			var mat: ShaderMaterial = child.material
+			if enabled:
+				mat.set_shader_parameter("animation_speed", 1.0)
+			else:
+				mat.set_shader_parameter("animation_speed", 0.0)

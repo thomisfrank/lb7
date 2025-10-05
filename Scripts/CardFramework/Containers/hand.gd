@@ -56,6 +56,7 @@ extends CardContainer
 
 var vertical_partitions_from_outside = []
 var vertical_partitions_from_inside = []
+var _has_been_laid_out := false  # Track if cards have been positioned at least once
 
 
 func _ready() -> void:
@@ -96,6 +97,15 @@ func _update_target_z_index() -> void:
 ## Calculates target positions for all cards using mathematical curves.
 ## Implements sophisticated fan-shaped arrangement with rotation and vertical displacement.
 func _update_target_positions() -> void:
+	# Play hand fill sound when cards are rearranged (but not on initial setup)
+	# Only play if we have cards, the hand is visible, and this is a rearrangement
+	if _held_cards.size() > 0 and is_visible_in_tree() and _has_been_laid_out:
+		if has_node("/root/SoundManager"):
+			get_node("/root/SoundManager").play_hand_fill(-4.0)
+	
+	# Mark that we've laid out cards at least once
+	_has_been_laid_out = true
+	
 	var x_min: float
 	var x_max: float
 	var y_min: float

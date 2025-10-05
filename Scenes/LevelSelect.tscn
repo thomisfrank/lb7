@@ -1,0 +1,128 @@
+[gd_scene load_steps=7 format=3 uid="uid://xud8u3xchevp"]
+
+[ext_resource type="Script" path="res://Scripts/level_select.gd" id="1_level_select"]
+[ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_1cx81"]
+[ext_resource type="PackedScene" uid="uid://2gbx8t47wulx" path="res://Scenes/UI/backgrounds.tscn" id="2_1qomi"]
+[ext_resource type="PackedScene" uid="uid://6riass0wy4ae" path="res://Scenes/CardFramework/Core/card.tscn" id="3_8sr8g"]
+[ext_resource type="Texture2D" uid="uid://d4gm834l2y443" path="res://Assets/icons/swap.png" id="4_1qomi"]
+[ext_resource type="PackedScene" uid="uid://cvjib4et5vg1t" path="res://Scenes/Button.tscn" id="5_8sr8g"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_oy2lu"]
+shader = ExtResource("1_1cx81")
+shader_parameter/pixel_size = 5.4830002129425
+shader_parameter/scanline_darkness = 0.166000007885
+shader_parameter/scanline_spacing = 3.530000120175
+shader_parameter/curvature_amount = 0.13200000627
+shader_parameter/aberration_amount = 0.00400000019
+shader_parameter/noise_amount = 0.150000007125
+shader_parameter/overlay_strength = 0.206000009785
+shader_parameter/bloom_threshold = 0.4370000207575
+shader_parameter/bloom_intensity = 0.138000006555
+shader_parameter/flicker_amount = 0.21600001026
+shader_parameter/flicker_speed = 2.6950001280125
+
+[node name="Control" type="Control"]
+custom_minimum_size = Vector2(1920, 1080)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("1_level_select")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+material = SubResource("ShaderMaterial_oy2lu")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="UILayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+layer = -1
+
+[node name="backgrounds" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("2_1qomi")]
+visibility_layer = 524288
+
+[node name="ColorOverlay" type="ColorRect" parent="SubViewportContainer/SubViewport/UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17254902, 0.24313726, 0.3137255, 0.6392157)
+metadata/_edit_use_anchors_ = true
+
+[node name="CardReps" type="HBoxContainer" parent="SubViewportContainer/SubViewport/UILayer"]
+custom_minimum_size = Vector2(1920, 1080)
+offset_left = -67.0
+offset_top = -262.0
+offset_right = 1853.0
+offset_bottom = 818.0
+alignment = 1
+
+[node name="2Swap_easy" parent="SubViewportContainer/SubViewport/UILayer/CardReps" instance=ExtResource("3_8sr8g")]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+card_name = "2 Swap"
+card_suit = "Swap"
+value = "2"
+color_a = Color(0.5058824, 0.8784314, 0.5764706, 1)
+color_b = Color(0.15294118, 0.68235296, 0.3764706, 1)
+icon_texture = ExtResource("4_1qomi")
+
+[node name="6Draw_med" parent="SubViewportContainer/SubViewport/UILayer/CardReps" instance=ExtResource("3_8sr8g")]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+card_name = "6 Draw"
+card_suit = "Draw"
+value = "6"
+color_a = Color(1, 0.9137255, 0.5686275, 1)
+color_b = Color(0.94509804, 0.76862746, 0.05882353, 1)
+
+[node name="10Swap_hard" parent="SubViewportContainer/SubViewport/UILayer/CardReps" instance=ExtResource("3_8sr8g")]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+card_name = "10 Swap"
+card_suit = "Swap"
+value = "10"
+color_a = Color(1, 0.5686275, 0.5254902, 1)
+color_b = Color(0.90588236, 0.29803923, 0.23529412, 1)
+icon_texture = ExtResource("4_1qomi")
+
+[node name="EasyButton" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("5_8sr8g")]
+offset_left = 128.0
+offset_top = 636.0
+offset_right = -72.0
+offset_bottom = 570.0
+
+[node name="MediumButton" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("5_8sr8g")]
+offset_left = 770.0
+offset_top = 638.0
+offset_right = 570.0
+offset_bottom = 572.0
+
+[node name="HardButton2" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("5_8sr8g")]
+offset_left = 1420.0
+offset_top = 636.0
+offset_right = 1220.0
+offset_bottom = 570.0
+
+[node name="ReturnButton" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("5_8sr8g")]
+offset_left = 94.99999
+offset_top = 966.0
+offset_right = -105.0
+offset_bottom = 900.0
+scale = Vector2(1.1200004, 1.1200004)

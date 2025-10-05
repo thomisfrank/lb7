@@ -17,6 +17,10 @@ const CF_SETTINGS = preload("res://Scripts/CardFramework/Core/card_framework_set
 @onready var game_state_screen: Control = $SubViewportContainer/SubViewport/UILayer/GameStateLayer/GameStateScreen
 @onready var round_total_screen: Control = $SubViewportContainer/SubViewport/UILayer/GameStateLayer/RoundTotalScreen
 @onready var game_over_screen: Control = $SubViewportContainer/SubViewport/UILayer/GameStateLayer/GameOverScreen
+@onready var pass_message: Control = $SubViewportContainer/SubViewport/UILayer/PassMessage
+@onready var options_button: TextureButton = $SubViewportContainer/SubViewport/UILayer/OptionsButton
+@onready var settings_panel: Control = $SubViewportContainer/SubViewport/UILayer/OptionsButton/"Settings Panel"
+@onready var surrender_button: Button = $SubViewportContainer/SubViewport/UILayer/OptionsButton/"Settings Panel"/SurrenderButton
 
 # RoundManager
 var round_manager: Node
@@ -28,30 +32,16 @@ var deck_counter: Control
 var deck_counter_label: Label
 var _align_deck_attempts: int = 0
 var _align_playarea_attempts: int = 0
+var game_surrendered: bool = false
+var skip_auto_start: bool = false  # Flag to prevent auto-starting game when recreating deck
 
-## Debug function to check card states
-func debug_card_states() -> void:
-	print("=== CARD STATE DEBUG ===")
-	if player_hand and "_held_cards" in player_hand:
-		print("Player hand cards:")
-		for card in player_hand._held_cards:
-			if card:
-				var locked_meta = card.has_meta("is_locked")
-				var can_interact = str(card.can_be_interacted_with) if "can_be_interacted_with" in card else "unknown"
-				print("  ", card.name, " - locked_meta:", locked_meta, " can_interact:", can_interact)
-	
-	var effects_manager = get_node_or_null("EffectsManager")
-	if effects_manager and "locked_cards" in effects_manager:
-		print("EffectsManager locked_cards count:", effects_manager.locked_cards.size())
-	
-	var sound_manager = get_node_or_null("/root/SoundManager")
-	if sound_manager:
-		print("SoundManager exists and is valid")
-	else:
-		print("SoundManager NOT FOUND!")
-	print("========================")
+## --- Debug / Development helpers (removed) ---
+## The detailed debug helper function and noisy diagnostics were
+## removed during cleanup. Enable the `logger.gd` utility for
+## targeted debugging instead of inline prints.
 
 func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	# Ensure CardManager is ready.
 	if cm == null:
 		push_error("CardManager not found at expected path")
@@ -93,7 +83,9 @@ func _ready():
 	
 	# Pass all references to RoundManager (done here so @onready vars are available)
 	var discard_pile_ref = cm.get_node_or_null("DiscardPile") if cm else null
+	var play_area_ref = cm.get_node_or_null("PlayArea") if cm else null
 	round_manager.initialize(
+		self,
 		round_counter,
 		game_state_screen,
 		round_total_screen,
@@ -104,7 +96,8 @@ func _ready():
 		deck,
 		player_hand,
 		opponent_hand,
-		discard_pile_ref
+		discard_pile_ref,
+		play_area_ref
 	)
 
 	# Defer card creation to ensure all nodes and resources are fully initialized.
@@ -129,6 +122,20 @@ func _ready():
 		var discard_pile = cm.get_node_or_null("Discard")
 		if discard_pile and not discard_pile.is_connected("count_changed", Callable(self, "_update_deck_counter")):
 			discard_pile.connect("count_changed", Callable(self, "_update_deck_counter"))
+	
+	# Connect options and surrender buttons
+	if options_button:
+		options_button.process_mode = Node.PROCESS_MODE_ALWAYS
+		options_button.pressed.connect(_on_options_pressed)
+		print("DEBUG: Options button set to PROCESS_MODE_ALWAYS")
+	
+	if surrender_button:
+		surrender_button.pressed.connect(_on_surrender_pressed)
+	
+	# Ensure settings panel is hidden initially
+	if settings_panel:
+		settings_panel.visible = false
+
 
 func _create_test_cards():
 	if deck == null:
@@ -138,14 +145,8 @@ func _create_test_cards():
 			push_error("Deck container not found")
 			return
 
-	# Diagnostics: print factory and deck state (muted unless LOG enabled)
-	LOG.log_args(["DEBUG: card_factory =", cm.card_factory])
-	if cm.card_factory:
-		LOG.log_args(["DEBUG: factory.card_info_dir =", cm.card_factory.card_info_dir])
-		LOG.log_args(["DEBUG: factory.card_asset_dir =", cm.card_factory.card_asset_dir])
-		if cm.card_factory.preloaded_cards != null:
-			var keys = cm.card_factory.preloaded_cards.keys()
-			LOG.log_args(["DEBUG: preloaded card keys count=", keys.size(), " sample=", keys.slice(0,10)])
+	# Create deck using configured composition. Detailed diagnostics
+	# previously emitted here have been removed for a cleaner log.
 
 	# Define the guaranteed deck composition
 	# 2 → 10 copies (5 draw, 5 swap)
@@ -184,28 +185,14 @@ func _create_test_cards():
 		if card:
 			if deck and deck.card_face_up == false:
 				card.show_front = false
-			if debug_deck_counter:
-				LOG.log_args(["created:", card_name, " node_path=", card.get_path(), " parent=", card.get_parent()])
-				LOG.log_args(["  -> show_front=", card.show_front, " icon_texture=", card.icon_texture, " card_size=", card.card_size])
-			# Diagnostic: print deck counts after each create (only when debug enabled)
-			if debug_deck_counter and deck:
-				LOG.log_args(["DEBUG: deck.get_card_count() after create=", deck.get_card_count()])
-				var cards_node = deck.get_node_or_null("Cards")
-				if cards_node:
-					LOG.log_args(["DEBUG: deck.Cards child count=", cards_node.get_child_count()])
+			# Card created (normal flow). Per-card diagnostics removed.
 		else:
 			push_warning("create_card returned null for: " + card_name)
 			if cm.card_factory and debug_deck_counter:
 				LOG.log_args(["  factory.card_info_dir=", cm.card_factory.card_info_dir])
 				LOG.log_args(["  Looking for file:", cm.card_factory.card_info_dir + "/" + card_name + ".json"]) 
 
-	# Diagnostic: dump final deck stats after creating all cards
-	if deck:
-		LOG.log_args(["DEBUG: final deck.get_card_count()=", deck.get_card_count()])
-		LOG.log_args(["DEBUG: deck child count=", deck.get_child_count()])
-		var cards_node = deck.get_node_or_null("Cards")
-		if cards_node:
-			LOG.log_args(["DEBUG: deck.Cards child count=", cards_node.get_child_count()])
+	# Final deck created. Use logger.gd to inspect counts if required.
 
 	# Synchronize internal state (in case factory added nodes but didn't update internal list)
 	_sync_deck_internal_state()
@@ -214,8 +201,10 @@ func _create_test_cards():
 	_update_deck_counter()
 	
 	# Start the round manager now that the deck is ready
-	if round_manager:
+	# ONLY if we're not manually managing the start (e.g., from Play Again)
+	if round_manager and not skip_auto_start:
 		call_deferred("_start_round_manager")
+
 
 func _start_round_manager():
 	if round_manager and round_manager.has_method("start_game"):
@@ -225,33 +214,6 @@ func _deal_cards():
 	# This function is deprecated - RoundManager now handles dealing
 	# Keeping it for backward compatibility but it won't be called
 	return
-	
-	if not deck or not player_hand or not opponent_hand:
-		push_error("Deck or hands not found for dealing.")
-		return
-
-	# Deal 4 cards to player
-	var player_cards = deck.get_top_cards(4)
-	for card in player_cards:
-		if deck.remove_card(card):
-			player_hand.add_card(card)
-	
-	# Play hand fill sound for player
-	if has_node("/root/SoundManager"):
-		get_node("/root/SoundManager").play_hand_fill()
-
-	# Deal 4 cards to opponent
-	var opponent_cards = deck.get_top_cards(4)
-	for card in opponent_cards:
-		if deck.remove_card(card):
-			opponent_hand.add_card(card)
-	
-	# Play hand fill sound for opponent
-	if has_node("/root/SoundManager"):
-		get_node("/root/SoundManager").play_hand_fill()
-	
-	# Update deck counter after dealing
-	_update_deck_counter()
 
 func _update_deck_counter(arg: Variant = null):
 	# Accept either a Card (old calls) or an int from the count_changed signal.
@@ -338,6 +300,11 @@ func _update_deck_counter(arg: Variant = null):
 		pass
 
 func _input(event):
+	# Only handle input while in the active scene tree
+	if not is_inside_tree():
+		# Debug: if you'd like to trace, uncomment the next line
+		# LOG.log_args(["_input called while not inside tree on node:", self.get_path()])
+		return
 	# Press R to clear and recreate test cards while running
 	if event is InputEventKey and event.pressed and event.keycode == KEY_R:
 		if cm:
@@ -371,6 +338,20 @@ func _input(event):
 				var effects_manager = get_node("/root/EffectsManager")
 				if effects_manager.is_waiting_for_swap_selection:
 					effects_manager.cancel_swap_selection()
+
+
+func _unhandled_input(event):
+	# Only handle unhandled input while in the active scene tree
+	if not is_inside_tree():
+		# Debug: uncomment to trace which node is receiving input while detached
+		# LOG.log_args(["_unhandled_input called while not inside tree on node:", self.get_path()])
+		return
+
+	# Close settings panel when clicking outside of it
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if settings_panel and settings_panel.visible:
+			if not settings_panel.get_global_rect().has_point(event.global_position):
+				_close_options_panel()
 
 func _sync_deck_internal_state() -> void:
 	# Ensure deck's internal held list matches actual Nodes under 'Cards'
@@ -668,6 +649,62 @@ func _print_game_state():
 	LOG.log_args(["Discard:", state.discard_count, "cards"])
 	LOG.log_args(["Locked cards:", effects_manager.locked_cards.size()])
 
+
+## Shows the pass message with a bounce animation
+func show_pass_message(player_name: String = "Player") -> void:
+	# show_pass_message called
+	
+	if not pass_message:
+		# pass_message node missing
+		return
+	
+		# pass_message node found, starting animation
+	
+	# Set the text if there's a label
+	var label = pass_message.get_node_or_null("Label")
+	if label and label is Label:
+		label.text = player_name + " Passes"
+	
+	# Start hidden and scaled down
+	pass_message.visible = true
+	pass_message.modulate.a = 0.0
+	pass_message.scale = Vector2(0.5, 0.5)
+	
+	# Create bounce animation
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)  # Back easing for bounce effect
+	
+	# Bounce in
+	tween.set_parallel(true)
+	tween.tween_property(pass_message, "modulate:a", 1.0, 0.3)
+	tween.tween_property(pass_message, "scale", Vector2(1.2, 1.2), 0.3)
+	
+	# Hold at full size briefly
+	tween.set_parallel(false)
+	tween.tween_interval(0.4)
+	
+	# Scale back to normal
+	tween.tween_property(pass_message, "scale", Vector2(1.0, 1.0), 0.15)
+	
+	# Hold again
+	tween.tween_interval(0.3)
+	
+	# Bounce out
+	tween.set_parallel(true)
+	tween.tween_property(pass_message, "modulate:a", 0.0, 0.25)
+	tween.tween_property(pass_message, "scale", Vector2(0.8, 0.8), 0.25)
+	
+	# Hide when done
+	tween.set_parallel(false)
+	tween.tween_callback(func(): pass_message.visible = false)
+	
+	# Wait for the tween to finish
+	# Waiting for pass message tween to finish...
+	await tween.finished
+	# Pass message animation complete!
+
+
 # Recursive search helper to find a node by name in the scene tree
 func _find_node_recursive(start: Node, target_name: String) -> Node:
 	if start == null:
@@ -680,3 +717,117 @@ func _find_node_recursive(start: Node, target_name: String) -> Node:
 			if found:
 				return found
 	return null
+
+
+# Recursively set process mode for a node and all its children
+# This allows UI elements to work even when the game tree is paused
+func _set_panel_process_mode_recursive(node: Node, mode: Node.ProcessMode) -> void:
+	if node == null:
+		return
+	node.process_mode = mode
+	for child in node.get_children():
+		_set_panel_process_mode_recursive(child, mode)
+
+
+## Called when options button is pressed
+func _on_options_pressed() -> void:
+	print("DEBUG: Options button pressed!")
+	if settings_panel:
+		print("DEBUG: Settings panel found, making visible")
+		settings_panel.visible = true
+		# Set panel to process even when paused
+		_set_panel_process_mode_recursive(settings_panel, Node.PROCESS_MODE_ALWAYS)
+		print("DEBUG: Panel process mode set to ALWAYS")
+		
+		# Cancel any active card dragging
+		_cancel_all_card_dragging()
+		
+		# Disable gameplay elements
+		_set_gameplay_enabled(false)
+		
+		# Pause the game tree to freeze gameplay
+		get_tree().paused = true
+		print("DEBUG: Game paused")
+		LOG.tracking("Options panel opened - game paused")
+
+
+## Called when surrender button is pressed
+func _on_surrender_pressed() -> void:
+	print("DEBUG: Surrender button pressed!")
+	LOG.log("Player surrendered!")
+	game_surrendered = true
+	# Close panel but DON'T unpause - game should stay paused until game over
+	if settings_panel:
+		settings_panel.visible = false
+	
+	# Tell round manager to end the game with surrender flag
+	if round_manager and round_manager.has_method("surrender_game"):
+		print("DEBUG: Calling round_manager.surrender_game()")
+		round_manager.surrender_game()
+	else:
+		# Fallback: just end the game
+		print("DEBUG: Fallback - calling round_manager.end_game()")
+		if round_manager and round_manager.has_method("end_game"):
+			round_manager.end_game()
+
+
+## Close the options panel and unpause the game
+func _close_options_panel() -> void:
+	print("DEBUG: Closing options panel")
+	if settings_panel:
+		settings_panel.visible = false
+		# Only unpause if game hasn't ended
+		if not game_surrendered:
+			# Re-enable gameplay elements
+			_set_gameplay_enabled(true)
+			get_tree().paused = false
+			print("DEBUG: Panel hidden, game unpaused")
+			LOG.tracking("Options panel closed - game unpaused")
+		else:
+			print("DEBUG: Game surrendered - keeping paused")
+
+
+## Enable or disable gameplay elements (cards, play area, score panels)
+func _set_gameplay_enabled(enabled: bool) -> void:
+	print("DEBUG: Setting gameplay enabled = ", enabled)
+	
+	# Disable/enable play area
+	var play_area = cm.get_node_or_null("PlayArea") if cm else null
+	if play_area:
+		play_area.process_mode = Node.PROCESS_MODE_DISABLED if not enabled else Node.PROCESS_MODE_INHERIT
+	
+	# Disable/enable player hand
+	if player_hand:
+		player_hand.process_mode = Node.PROCESS_MODE_DISABLED if not enabled else Node.PROCESS_MODE_INHERIT
+	
+	# Disable/enable opponent hand  
+	if opponent_hand:
+		opponent_hand.process_mode = Node.PROCESS_MODE_DISABLED if not enabled else Node.PROCESS_MODE_INHERIT
+	
+	# Disable/enable score panels
+	if player_score_panel:
+		player_score_panel.process_mode = Node.PROCESS_MODE_DISABLED if not enabled else Node.PROCESS_MODE_INHERIT
+	if opponent_score_panel:
+		opponent_score_panel.process_mode = Node.PROCESS_MODE_DISABLED if not enabled else Node.PROCESS_MODE_INHERIT
+
+
+## Cancel any active card dragging across all hands and containers
+func _cancel_all_card_dragging() -> void:
+	print("DEBUG: Canceling all card dragging")
+	
+	# Get all cards in the scene
+	var all_cards = []
+	
+	if cm:
+		# Get cards from all containers
+		for container_id in cm.card_container_dict:
+			var container = cm.card_container_dict[container_id]
+			if container and container.has_method("get_all_cards"):
+				all_cards.append_array(container.get_all_cards())
+	
+	# Force all cards back to IDLE state
+	for card in all_cards:
+		if card and card.has_method("_change_state"):
+			# DraggableState.IDLE = 0
+			card._change_state(0)  # Force to IDLE state
+			print("DEBUG: Reset card ", card.name, " to IDLE")

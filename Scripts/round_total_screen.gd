@@ -37,13 +37,10 @@ func show_round_results(
 	p_previous_score: int,
 	opp_previous_score: int
 ) -> void:
-	print("ROUND_TOTAL: show_round_results called - player_cards: ", p_cards.size(), " opponent_cards: ", opp_cards.size())
 	if is_animating:
-		print("ROUND_TOTAL: Already animating, skipping")
 		return
 	
 	is_animating = true
-	print("ROUND_TOTAL: Starting round total animation")
 	
 	# Clear any existing cards from display hands
 	_clear_display_hands()
@@ -76,11 +73,9 @@ func show_round_results(
 	
 	# Fade in the screen
 	visible = true
-	print("ROUND_TOTAL: Fading in screen - visible: ", visible, " modulate: ", modulate)
 	var fade_tween = create_tween()
 	fade_tween.tween_property(self, "modulate:a", 1.0, 0.5)
 	fade_tween.tween_callback(_start_card_reveals)
-	print("ROUND_TOTAL: Tween started, waiting for fade-in to complete")
 
 
 ## Clears any existing cards from display hands
@@ -97,6 +92,9 @@ func _move_cards_to_display_hands() -> void:
 	if player_hand:
 		for card in player_cards:
 			if card and is_instance_valid(card):
+				# Unlock card to remove any lock overlays from gameplay
+				if card.has_method("unlock"):
+					card.unlock()
 				# Remove from current container
 				if card.card_container and card.card_container.has_method("remove_card"):
 					card.card_container.remove_card(card)
@@ -110,6 +108,9 @@ func _move_cards_to_display_hands() -> void:
 	if opponent_hand:
 		for card in opponent_cards:
 			if card and is_instance_valid(card):
+				# Unlock card to remove any lock overlays from gameplay
+				if card.has_method("unlock"):
+					card.unlock()
 				# Remove from current container
 				if card.card_container and card.card_container.has_method("remove_card"):
 					card.card_container.remove_card(card)
@@ -135,17 +136,13 @@ func _hide_all_cards() -> void:
 
 ## Starts the card reveal sequence
 func _start_card_reveals() -> void:
-	print("ROUND_TOTAL: Starting card reveals")
 	var max_cards = max(player_cards.size(), opponent_cards.size())
-	print("ROUND_TOTAL: Max cards to reveal: ", max_cards)
 	
 	for i in range(max_cards):
-		print("ROUND_TOTAL: Revealing card index ", i)
 		await get_tree().create_timer(card_reveal_delay).timeout
 		_reveal_card_at_index(i)
 	
 	# After all cards are revealed, show win condition
-	print("ROUND_TOTAL: All cards revealed, showing win condition")
 	await get_tree().create_timer(win_condition_delay).timeout
 	_show_win_condition()
 

@@ -4,7 +4,7 @@ extends Node
 @export var VERBOSE: bool = false
 
 # General static flags (used when the script is preloaded as LOG)
-static var VERBOSE_STATIC: bool = true
+static var VERBOSE_STATIC: bool = false
 static var TRACKING_STATIC: bool = false
 
 static func log(msg: Variant) -> void:

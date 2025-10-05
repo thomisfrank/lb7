@@ -36,6 +36,9 @@ func _create_test_cards():
 		LOG.log("Created back card")
 
 func _input(event):
+	if not is_inside_tree():
+		return
+
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_R:
 			LOG.log("Recreating test cards...")

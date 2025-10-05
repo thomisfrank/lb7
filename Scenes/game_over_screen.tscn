@@ -1,10 +1,10 @@
 [gd_scene load_steps=21 format=3 uid="uid://beorjeh8ott8h"]
 
-[ext_resource type="Script" path="res://Scripts/game_over_screen.gd" id="1_gameover"]
 [ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="1_14u15"]
 [ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="1_ek8ke"]
-[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_eoghk"]
-[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/hand.tscn" id="3_14u15"]
+[ext_resource type="Script" uid="uid://dxcmq8xtcwb02" path="res://Scripts/game_over_screen.gd" id="1_gameover"]
+[ext_resource type="PackedScene" uid="uid://b46d20hycywxy" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_eoghk"]
+[ext_resource type="PackedScene" uid="uid://bhfvwys38ys5e" path="res://Scenes/CardFramework/Containers/hand.tscn" id="3_14u15"]
 [ext_resource type="PackedScene" uid="uid://cvjib4et5vg1t" path="res://Scenes/Button.tscn" id="5_j3ryr"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rjluv"]
@@ -14,7 +14,7 @@ shader_parameter/jitter_amount = 0.002000000095
 
 [sub_resource type="LabelSettings" id="LabelSettings_j3ryr"]
 font = ExtResource("1_ek8ke")
-font_size = 250
+font_size = 200
 font_color = Color(0.9254902, 0.9411765, 0.94509804, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_rjluv"]
@@ -194,7 +194,7 @@ offset_right = 1112.0
 offset_bottom = 299.0
 max_hand_size = 4
 max_hand_spread = 850
-card_face_up = false
+card_face_up = true
 cards_interactable = false
 hand_rotation_curve = null
 hand_vertical_curve = null

@@ -20,11 +20,11 @@ func _ready() -> void:
 
 ## Shows a game state message for the configured duration
 func show_message(message: String) -> void:
-	print("GameStateScreen: show_message called with '", message, "'")
+	# show_message called
 	if label:
 		label.text = message
 	else:
-		print("GameStateScreen: label is null!")
+		# label is null
 		return
 	
 	# Cancel any existing tween
@@ -33,19 +33,19 @@ func show_message(message: String) -> void:
 	
 	# Make visible
 	visible = true
-	print("GameStateScreen: Setting visible=true, starting animation")
 	
-	# Create fade in/out sequence
+	# Create fade in/out sequence with naturalistic easing
 	_current_tween = create_tween()
-	_current_tween.tween_property(self, "modulate:a", 1.0, fade_in_duration)
+	# Fade in with ease-out (starts fast, slows down for smooth appearance)
+	_current_tween.tween_property(self, "modulate:a", 1.0, fade_in_duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	_current_tween.tween_interval(display_duration)
-	_current_tween.tween_property(self, "modulate:a", 0.0, fade_out_duration)
+	# Fade out with ease-in (starts slow, speeds up for smooth disappearance)
+	_current_tween.tween_property(self, "modulate:a", 0.0, fade_out_duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
 	_current_tween.tween_callback(_on_animation_complete)
 
 
 ## Shows "Round #" message
 func show_round(round_number: int) -> void:
-	print("GameStateScreen: show_round called with round ", round_number)
 	show_message("Round " + str(round_number))
 
 

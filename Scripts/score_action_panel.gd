@@ -8,7 +8,7 @@ extends Control
 @onready var no_action1_icon: TextureRect = $BG/NoAction1
 @onready var no_action2_icon: TextureRect = $BG/NoAction2
 @onready var pass_button: PanelContainer = $BG/PassButton
-@onready var pass_button_label: Label = $BG/PassButton/Label
+@onready var pass_button_label: Label = $BG/PassButton/AspectRatioContainer/Label
 
 const MAX_ACTIONS: int = 2
 

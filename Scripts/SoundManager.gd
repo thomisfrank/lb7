@@ -6,6 +6,7 @@ var hand_fill_sounds: Array[AudioStream] = []
 var hand_discard_sounds: Array[AudioStream] = []
 var single_discard_sounds: Array[AudioStream] = []
 var card_played_sound: AudioStream = null
+var new_round_sound: AudioStream = null
 
 # Audio player pool for concurrent sounds
 var audio_players: Array[AudioStreamPlayer] = []
@@ -30,6 +31,9 @@ func _load_sounds() -> void:
 	
 	# Load CardPlayed sound
 	card_played_sound = load("res://Assets/sounds/sfx/CardPlayed.mp3")
+	
+	# Load NewRound sound
+	new_round_sound = load("res://Assets/sounds/sfx/NewRound.mp3")
 	
 	# Load HandFill sounds
 	var hand_fill = load("res://Assets/sounds/sfx/HandFill.mp3")
@@ -115,3 +119,7 @@ func play_hand_discard(volume_db: float = 0.0) -> void:
 func play_single_discard(volume_db: float = 0.0) -> void:
 	_play_random_from_array(single_discard_sounds, volume_db)
 
+
+## Play the new round sound
+func play_new_round(volume_db: float = 0.0) -> void:
+	_play_sound(new_round_sound, volume_db)

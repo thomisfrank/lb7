@@ -13,6 +13,9 @@ uniform float intensity = 0.3;
 // sharpness: How soft or sharp the gradient's edge is
 uniform float sharpness = 1.5;
 
+// animation_speed: Multiplier for animation (set to 0.0 to freeze)
+uniform float animation_speed : hint_range(0.0, 2.0) = 1.0;
+
 // random_seed: A unique number for each instance to randomize its movement
 uniform float random_seed : hint_range(0.0, 100.0) = 0.0;
 
@@ -26,9 +29,11 @@ void fragment() {
 
 	// 2. Create a moving center point.
 	// We add the random_seed to TIME to offset the animation start point for each instance.
+	// animation_speed controls the rate (0 = frozen)
+	float animated_time = TIME * animation_speed;
 	vec2 moving_center = vec2(
-		0.5 + sin((TIME * varied_speed) + random_seed) * varied_intensity,
-		0.5 + cos((TIME * varied_speed * 0.7) + random_seed) * varied_intensity
+		0.5 + sin((animated_time * varied_speed) + random_seed) * varied_intensity,
+		0.5 + cos((animated_time * varied_speed * 0.7) + random_seed) * varied_intensity
 	);
 
 	// 3. Calculate the distance from the current pixel (UV) to the moving center.

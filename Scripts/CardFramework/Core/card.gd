@@ -45,6 +45,10 @@ static var holding_card_count: int = 0
 ## If true, the front face is visible; otherwise, the back face is visible.
 @export var show_front: bool = true:
 	set(value):
+		show_front = value
+		# Only update visibility if nodes are ready (avoid Nil errors during instantiation)
+		if not is_node_ready() or not front_face or not back_face:
+			return
 		if value:
 			front_face.visible = true
 			back_face.visible = false
@@ -79,6 +83,15 @@ func _ready() -> void:
 	front_face.size = card_size
 	back_face.size = card_size
 	pivot_offset = card_size / 2
+	
+	# Apply the show_front value now that nodes are ready
+	if show_front:
+		front_face.visible = true
+		back_face.visible = false
+	else:
+		front_face.visible = false
+		back_face.visible = true
+	
 	# This creates a unique material for this card instance's front face
 	if front_dynamic_bg and front_dynamic_bg.material:
 		front_dynamic_bg.material = front_dynamic_bg.material.duplicate()
@@ -89,6 +102,14 @@ func _ready() -> void:
 
 	# Update card visuals if data is available
 	update_card_visuals()
+	
+	# Listen for visual effects changes
+	if has_node("/root/SettingsManager"):
+		var settings_mgr = get_node("/root/SettingsManager")
+		if settings_mgr and settings_mgr.has_signal("visual_effects_changed"):
+			settings_mgr.visual_effects_changed.connect(_on_visual_effects_changed)
+			# Apply current VFX state
+			_apply_visual_effects_state(settings_mgr.visual_effects_enabled)
 
 	# ...existing code...
 
@@ -252,24 +273,17 @@ func lock(overlay_alpha: float = 0.7, debug_visual: bool = false) -> void:
 	# input flags (mouse_filter/can_be_interacted_with) which led to unexpected
 	# state transitions. Restore to visual-only behavior so caller decides input.
 
-	# If overlay already exists under front/back, just ensure visible
+	# Lock overlay should ONLY appear on the front face (owner's view)
+	# This prevents opponents from seeing which cards are locked
 	var front_overlay = null
-	var back_overlay = null
 	if has_node("FrontFace/TextureRect/LockOverlay"):
 		front_overlay = get_node("FrontFace/TextureRect/LockOverlay")
-	if has_node("BackFace/TextureRect/LockOverlay"):
-		back_overlay = get_node("BackFace/TextureRect/LockOverlay")
-	if front_overlay or back_overlay:
-		if front_overlay:
-			front_overlay.visible = true
-		if back_overlay:
-			back_overlay.visible = true
-		LOG.log_args(["Card.lock: existing overlay(s) ->", name, "front=", front_overlay, "back=", back_overlay])
+		front_overlay.visible = true
+		LOG.log_args(["Card.lock: existing overlay ->", name])
 		return
 
-	# Create an overlay for the front face (so it perfectly matches the visual texture rect)
+	# Create an overlay for the front face only (owner sees it, opponent doesn't)
 	var front_parent = get_node_or_null("FrontFace/TextureRect")
-	var back_parent = get_node_or_null("BackFace/TextureRect")
 
 	if front_parent and front_parent is Control:
 		var fo = TextureRect.new()
@@ -284,35 +298,17 @@ func lock(overlay_alpha: float = 0.7, debug_visual: bool = false) -> void:
 		front_parent.add_child(fo)
 		front_overlay = fo
 
-	# Create an overlay for the back face if present so lock covers either face
-	if back_parent and back_parent is Control:
-		var bo = TextureRect.new()
-		bo.name = "LockOverlay"
-		bo.texture = load("res://Assets/UI/LockOverlay.png")
-		bo.set_anchors_preset(Control.PRESET_FULL_RECT)
-		bo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		bo.stretch_mode = TextureRect.STRETCH_SCALE
-		bo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		bo.z_index = 200
-		bo.modulate = Color(1, 1, 1, 0.0)
-		back_parent.add_child(bo)
-		back_overlay = bo
-
-	# Prefer storing the front overlay reference as metadata for legacy callers; also store a pair
+	# Store the front overlay reference as metadata
 	if front_overlay:
 		set_meta("lock_badge", front_overlay)
-	elif back_overlay:
-		set_meta("lock_badge", back_overlay)
 
-	LOG.log_args(["Card.lock: created overlay(s) ->", name, "front=", front_overlay, "back=", back_overlay, "card_size=", card_size])
+	LOG.log_args(["Card.lock: created overlay ->", name, "card_size=", card_size])
 
-	# Animate fade in on both overlays (if they exist)
+	# Animate fade in on front overlay only
 	var tween = create_tween()
 	if front_overlay:
 		tween.tween_property(front_overlay, "modulate:a", overlay_alpha, 0.2)
-	if back_overlay:
-		tween.tween_property(back_overlay, "modulate:a", overlay_alpha, 0.2)
-	tween.tween_callback(func(): LOG.log_args(["Card.lock: overlay visible ->", name, "alpha=", overlay_alpha]))
+		tween.tween_callback(func(): LOG.log_args(["Card.lock: overlay visible ->", name, "alpha=", overlay_alpha]))
 
 	# Optional debug overlay: bright translucent ColorRect so it's obvious on screen
 	if debug_visual:
@@ -368,23 +364,18 @@ func unlock() -> void:
 		return
 	# Do not implicitly change can_be_interacted_with or mouse_filter here.
 	# EffectsManager or callers are responsible for restoring interaction state.
-	# Fade out any overlays on the front/back face TextureRect parents
+	# Fade out overlay on the front face only (matches lock() behavior)
 	var front_parent = get_node_or_null("FrontFace/TextureRect")
-	var back_parent = get_node_or_null("BackFace/TextureRect")
 	var to_fade: Array = []
 	if has_meta("lock_badge"):
 		var mb = get_meta("lock_badge")
 		if is_instance_valid(mb):
 			to_fade.append(mb)
-	# Also check for LockOverlay nodes under the face parents (covers new placement)
+	# Check for LockOverlay node under front face parent only
 	if front_parent and front_parent.has_node("LockOverlay"):
 		var fo = front_parent.get_node("LockOverlay")
 		if is_instance_valid(fo):
 			to_fade.append(fo)
-	if back_parent and back_parent.has_node("LockOverlay"):
-		var bo = back_parent.get_node("LockOverlay")
-		if is_instance_valid(bo):
-			to_fade.append(bo)
 
 	for overlay in to_fade:
 		if overlay and is_instance_valid(overlay) and overlay.is_inside_tree():
@@ -461,3 +452,29 @@ func _handle_mouse_released() -> void:
 	super._handle_mouse_released()
 	if card_container:
 		card_container.release_holding_cards()
+
+
+## Called when visual effects setting changes
+func _on_visual_effects_changed(enabled: bool) -> void:
+	_apply_visual_effects_state(enabled)
+
+
+## Apply visual effects state to card shaders
+func _apply_visual_effects_state(enabled: bool) -> void:
+	# When VFX is disabled, freeze shader animation but keep gradient colors
+	if front_dynamic_bg and front_dynamic_bg.material:
+		var shader_mat = front_dynamic_bg.material as ShaderMaterial
+		if shader_mat:
+			# Freeze time at 0 to stop animation, or let it run normally
+			if enabled:
+				shader_mat.set_shader_parameter("animation_speed", 1.0)
+			else:
+				shader_mat.set_shader_parameter("animation_speed", 0.0)
+	
+	if back_dynamic_bg and back_dynamic_bg.material:
+		var shader_mat = back_dynamic_bg.material as ShaderMaterial
+		if shader_mat:
+			if enabled:
+				shader_mat.set_shader_parameter("animation_speed", 1.0)
+			else:
+				shader_mat.set_shader_parameter("animation_speed", 0.0)
