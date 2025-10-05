@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Added by assistant backup
+backups/
+.import/
+*.import
+.vscode/
+.DS_Store

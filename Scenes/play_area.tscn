@@ -1,0 +1,40 @@
+[gd_scene load_steps=5 format=3 uid="uid://i5glty1c07x1"]
+
+[ext_resource type="Script" uid="uid://dmudstwf6aynj" path="res://Scripts/play_area.gd" id="1_vj5k4"]
+[ext_resource type="Shader" uid="uid://cler1xqof402b" path="res://Scripts/Shaders/DigitalFilter.gdshader" id="1_ybnwo"]
+[ext_resource type="Texture2D" uid="uid://ba8fjbg2snecj" path="res://Assets/UI/PlayArea.png" id="2_jf5ke"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jf5ke"]
+shader = ExtResource("1_ybnwo")
+shader_parameter/strength = 1.0
+shader_parameter/aberration_amount = 0.05000000074506
+shader_parameter/opacity = 0.38000001805
+shader_parameter/feather_amount = 0.0730000034675
+
+[node name="PlayArea" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_right = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_vj5k4")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_jf5ke")
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -300.0
+offset_right = 300.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_jf5ke")
+expand_mode = 1

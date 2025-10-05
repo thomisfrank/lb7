@@ -1,0 +1,48 @@
+[gd_scene load_steps=7 format=3 uid="uid://digcvx5ewwoln"]
+
+[ext_resource type="Script" uid="uid://dgfsh7dfnul6v" path="res://Scripts/info_box_l.gd" id="1_a2b3c"]
+[ext_resource type="Texture2D" uid="uid://da878jx85yqo4" path="res://Assets/UI/InfoBoxLandscape.png" id="1_got7k"]
+[ext_resource type="FontFile" uid="uid://cd0mg1j1e8pyd" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="3_h25e7"]
+[ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="3_tv8lr"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mfdx2"]
+shader = ExtResource("3_tv8lr")
+shader_parameter/jitter_rate = 6.6670002691825
+shader_parameter/jitter_amount = 0.006000000285
+
+[sub_resource type="LabelSettings" id="LabelSettings_tv8lr"]
+line_spacing = 5.0
+font = ExtResource("3_h25e7")
+font_size = 35
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+outline_size = 4
+outline_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[node name="InfoBoxL" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_a2b3c")
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TextureRect" type="TextureRect" parent="AspectRatioContainer"]
+layout_mode = 2
+texture = ExtResource("1_got7k")
+
+[node name="Label" type="Label" parent="AspectRatioContainer"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_mfdx2")
+custom_minimum_size = Vector2(645, 70)
+layout_mode = 2
+text = "Card description goes here"
+label_settings = SubResource("LabelSettings_tv8lr")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

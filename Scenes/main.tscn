@@ -1,0 +1,189 @@
+[gd_scene load_steps=18 format=3 uid="uid://ctfxrhcbqydwj"]
+
+[ext_resource type="Script" uid="uid://bbejvgriltre2" path="res://Scripts/main.gd" id="1_21xkr"]
+[ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_kry3j"]
+[ext_resource type="PackedScene" uid="uid://b46d20hycywxy" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_21xkr"]
+[ext_resource type="PackedScene" uid="uid://brwqfgagcvnns" path="res://Scenes/CardFramework/Core/custom_card_factory.tscn" id="3_6bp64"]
+[ext_resource type="PackedScene" uid="uid://2gbx8t47wulx" path="res://Scenes/UI/backgrounds.tscn" id="3_344ge"]
+[ext_resource type="PackedScene" uid="uid://g6wrsm5a0fqd" path="res://Scenes/CardFramework/Containers/pile.tscn" id="4_344ge"]
+[ext_resource type="PackedScene" uid="uid://bhfvwys38ys5e" path="res://Scenes/CardFramework/Containers/hand.tscn" id="5_ynf5e"]
+[ext_resource type="PackedScene" uid="uid://cuovayfsjg0y1" path="res://Scenes/CardFramework/Containers/drop_zone.tscn" id="7_6bp64"]
+[ext_resource type="PackedScene" uid="uid://cmwnhwwwiwc82" path="res://Scenes/UI/deck_counter.tscn" id="8_ynf5e"]
+[ext_resource type="PackedScene" uid="uid://i5glty1c07x1" path="res://Scenes/play_area.tscn" id="9_hptm8"]
+[ext_resource type="PackedScene" uid="uid://digcvx5ewwoln" path="res://Scenes/info_box_l.tscn" id="10_6iyac"]
+[ext_resource type="PackedScene" uid="uid://dvc0c41lxbqbk" path="res://Scenes/game_state_screen.tscn" id="11_d1ilt"]
+[ext_resource type="PackedScene" uid="uid://drlqn0gjqk7ma" path="res://Scenes/RoundCounter.tscn" id="13_fdnlq"]
+[ext_resource type="PackedScene" uid="uid://lvve3f8bafe2" path="res://Scenes/round_total_screen.tscn" id="13_jkdf5"]
+[ext_resource type="PackedScene" uid="uid://beorjeh8ott8h" path="res://Scenes/game_over_screen.tscn" id="14_k12tt"]
+[ext_resource type="PackedScene" uid="uid://ccmgkdpjuqpcq" path="res://Scenes/score_action_panel.tscn" id="15_wsu2k"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0xm2m"]
+shader = ExtResource("1_kry3j")
+shader_parameter/pixel_size = 5.4830002129425
+shader_parameter/scanline_darkness = 0.166000007885
+shader_parameter/scanline_spacing = 3.530000120175
+shader_parameter/curvature_amount = 0.13200000627
+shader_parameter/aberration_amount = 0.00400000019
+shader_parameter/noise_amount = 0.150000007125
+shader_parameter/overlay_strength = 0.206000009785
+shader_parameter/bloom_threshold = 0.4370000207575
+shader_parameter/bloom_intensity = 0.138000006555
+shader_parameter/flicker_amount = 0.21600001026
+shader_parameter/flicker_speed = 2.6950001280125
+
+[node name="Main" type="Node"]
+script = ExtResource("1_21xkr")
+desired_deck_size = 48
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+material = SubResource("ShaderMaterial_0xm2m")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="GameLayer" type="Node2D" parent="SubViewportContainer/SubViewport"]
+
+[node name="CardManager" parent="SubViewportContainer/SubViewport/GameLayer" instance=ExtResource("2_21xkr")]
+card_factory_scene = ExtResource("3_6bp64")
+
+[node name="Deck" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("4_344ge")]
+layout_mode = 0
+offset_left = 902.0
+offset_top = 443.0
+offset_right = 902.0
+offset_bottom = 443.0
+stack_display_gap = 4
+card_face_up = false
+stack_horizontal_offset = 0.5
+enable_drop_zone = false
+
+[node name="PlayerHand" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("5_ynf5e")]
+layout_mode = 0
+offset_left = 895.0
+offset_top = 942.0
+offset_right = 895.0
+offset_bottom = 942.0
+max_hand_size = 4
+card_hover_distance = 60.0
+
+[node name="OpponentHand" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("5_ynf5e")]
+layout_mode = 0
+offset_left = 895.0
+offset_top = 64.0
+offset_right = 895.0
+offset_bottom = 64.0
+max_hand_size = 4
+max_hand_spread = 850
+card_face_up = false
+cards_interactable = false
+hand_rotation_curve = null
+hand_vertical_curve = null
+
+[node name="DiscardPile" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("4_344ge")]
+layout_mode = 0
+offset_left = 1345.0
+offset_top = 410.0
+offset_right = 1345.0
+offset_bottom = 410.0
+
+[node name="DeckCounter" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("8_ynf5e")]
+layout_mode = 1
+offset_left = 1101.0
+offset_top = 466.0
+offset_right = 1101.0
+offset_bottom = 466.0
+scale = Vector2(0.4, 0.4)
+
+[node name="DropZone" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("7_6bp64")]
+layout_mode = 1
+offset_left = 1334.0
+offset_top = 494.0
+offset_right = 1334.0
+offset_bottom = 494.0
+
+[node name="PlayArea" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("9_hptm8")]
+z_index = 4096
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 1001.0
+offset_top = 592.0
+offset_right = 1001.0
+offset_bottom = 592.0
+
+[node name="InfoBoxL" parent="SubViewportContainer/SubViewport/GameLayer/CardManager" instance=ExtResource("10_6iyac")]
+visible = false
+z_index = 2000
+layout_mode = 1
+offset_top = -100.0
+offset_bottom = -100.0
+
+[node name="UILayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+layer = -1
+
+[node name="backgrounds" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("3_344ge")]
+visibility_layer = 524288
+
+[node name="GameStateLayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport/UILayer"]
+layer = 100
+
+[node name="GameStateScreen" parent="SubViewportContainer/SubViewport/UILayer/GameStateLayer" instance=ExtResource("11_d1ilt")]
+visible = false
+
+[node name="RoundTotalScreen" parent="SubViewportContainer/SubViewport/UILayer/GameStateLayer" instance=ExtResource("13_jkdf5")]
+visible = false
+offset_left = -4.0
+offset_right = -4.0
+scale = Vector2(1.0188206, 1)
+card_reveal_delay = 1.5
+card_fade_in_duration = 0.8
+win_condition_delay = 2.0
+score_count_duration = 2.0
+final_score_delay = 1.0
+metadata/_edit_horizontal_guides_ = [248.0, 759.0]
+
+[node name="GameOverScreen" parent="SubViewportContainer/SubViewport/UILayer/GameStateLayer" instance=ExtResource("14_k12tt")]
+visible = false
+
+[node name="RoundCounter" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("13_fdnlq")]
+anchor_left = 0.8666667
+anchor_top = 0.43240747
+anchor_right = 1.001762
+anchor_bottom = 0.560319
+offset_top = -27.000061
+offset_right = 277.61694
+offset_bottom = 120.85547
+scale = Vector2(0.4830225, 0.4830225)
+
+[node name="PlayerScoreActionPanel" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("15_wsu2k")]
+anchor_left = 0.0010416667
+anchor_top = 0.7259259
+anchor_right = 0.2607107
+anchor_bottom = 0.9239661
+offset_right = 170.43549
+offset_bottom = 73.11658
+scale = Vector2(0.7452385, 0.7452385)
+
+[node name="OpponentScoreActionPanel2" parent="SubViewportContainer/SubViewport/UILayer" instance=ExtResource("15_wsu2k")]
+unique_name_in_owner = true
+anchor_left = 0.0020833334
+anchor_top = 0.12407407
+anchor_right = 0.26175237
+anchor_bottom = 0.3221143
+offset_right = 170.43546
+offset_bottom = 73.11658
+scale = Vector2(0.7452385, 0.7452385)
