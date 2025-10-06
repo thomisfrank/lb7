@@ -1,0 +1,264 @@
+[gd_scene load_steps=16 format=3 uid="uid://b1ecybp45otqt"]
+
+[ext_resource type="Texture2D" uid="uid://di5qnibcnmkp8" path="res://Assets/UI/InfoBoxPortrait.png" id="1_lonyb"]
+[ext_resource type="FontFile" uid="uid://bxmcvgg4mm776" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="2_7d32w"]
+[ext_resource type="FontFile" uid="uid://bp81hts6eecnx" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="3_i0xi1"]
+[ext_resource type="Texture2D" uid="uid://12pqc6tnhird" path="res://Assets/UI/BulletPoint.png" id="4_sf1gv"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_fvnpy"]
+font = ExtResource("2_7d32w")
+font_size = 64
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_spxys"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_27c06"]
+font = ExtResource("3_i0xi1")
+font_size = 28
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_2wkvt"]
+font = ExtResource("2_7d32w")
+font_size = 48
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_tk1tp"]
+font = ExtResource("3_i0xi1")
+font_size = 28
+font_color = Color(0.90588236, 0.29803923, 0.23529412, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_2klxv"]
+font = ExtResource("3_i0xi1")
+font_size = 28
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_2c255"]
+font = ExtResource("3_i0xi1")
+font_size = 28
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_o8x83"]
+font = ExtResource("3_i0xi1")
+font_size = 28
+font_color = Color(0.15294118, 0.68235296, 0.3764706, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_35c8b"]
+font = ExtResource("3_i0xi1")
+font_size = 28
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_o3gpe"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ipq1q"]
+font = ExtResource("3_i0xi1")
+font_size = 24
+font_color = Color(0.17254902, 0.24313726, 0.3137255, 1)
+
+[node name="HowToPlay" type="Control"]
+layout_mode = 3
+anchor_right = 0.44114584
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+layout_mode = 0
+offset_right = 893.0
+offset_bottom = 1130.0
+scale = Vector2(0.9544795, 0.9544795)
+
+[node name="Frame" type="TextureRect" parent="AspectRatioContainer"]
+layout_mode = 2
+texture = ExtResource("1_lonyb")
+metadata/_edit_use_anchors_ = true
+
+[node name="Rules" type="VBoxContainer" parent="AspectRatioContainer/Frame"]
+layout_mode = 0
+offset_left = 38.764584
+offset_top = 35.62151
+offset_right = 855.7646
+offset_bottom = 879.6215
+
+[node name="Title" type="Label" parent="AspectRatioContainer/Frame/Rules"]
+layout_mode = 2
+text = "How to Play"
+label_settings = SubResource("LabelSettings_fvnpy")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_spxys")
+
+[node name="Goal" type="Label" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(817, 0)
+layout_mode = 2
+text = "The goal is to have the highest overall score when the deck runs out. Earn points each round by having the lowest card total in your hand. "
+label_settings = SubResource("LabelSettings_27c06")
+autowrap_mode = 3
+
+[node name="SubTitle1" type="Label" parent="AspectRatioContainer/Frame/Rules"]
+layout_mode = 2
+text = "How a Round Works"
+label_settings = SubResource("LabelSettings_2wkvt")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VSeparator2" type="VSeparator" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_spxys")
+
+[node name="TurnFlow" type="HBoxContainer" parent="AspectRatioContainer/Frame/Rules"]
+layout_mode = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="Turn_" type="Label" parent="AspectRatioContainer/Frame/Rules/TurnFlow"]
+layout_mode = 2
+text = "Turn:"
+label_settings = SubResource("LabelSettings_tk1tp")
+
+[node name="actions_" type="Label" parent="AspectRatioContainer/Frame/Rules/TurnFlow"]
+layout_mode = 2
+text = "two actions →"
+label_settings = SubResource("LabelSettings_2klxv")
+
+[node name="reveal_" type="Label" parent="AspectRatioContainer/Frame/Rules/TurnFlow"]
+layout_mode = 2
+text = "reveal→"
+label_settings = SubResource("LabelSettings_2c255")
+
+[node name="score_" type="Label" parent="AspectRatioContainer/Frame/Rules/TurnFlow"]
+layout_mode = 2
+text = "score→"
+label_settings = SubResource("LabelSettings_2c255")
+
+[node name="score_2" type="Label" parent="AspectRatioContainer/Frame/Rules/TurnFlow"]
+layout_mode = 2
+text = "next round"
+label_settings = SubResource("LabelSettings_o8x83")
+
+[node name="VSeparator3" type="VSeparator" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_spxys")
+
+[node name="Actions" type="Label" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(749, 0)
+layout_mode = 2
+text = "Actions: On your turn, you get two actions.  You can choose from the following:"
+label_settings = SubResource("LabelSettings_35c8b")
+autowrap_mode = 3
+
+[node name="VSeparator4" type="VSeparator" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_spxys")
+
+[node name="ActionDraw" type="HBoxContainer" parent="AspectRatioContainer/Frame/Rules"]
+layout_mode = 2
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="AspectRatioContainer/Frame/Rules/ActionDraw"]
+layout_mode = 2
+texture = ExtResource("4_sf1gv")
+stretch_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="AspectRatioContainer/Frame/Rules/ActionDraw"]
+custom_minimum_size = Vector2(3, 0)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_o3gpe")
+
+[node name="Draw_" type="Label" parent="AspectRatioContainer/Frame/Rules/ActionDraw"]
+custom_minimum_size = Vector2(749, 0)
+layout_mode = 2
+text = "Draw: Discard the card played and then draw one card."
+label_settings = SubResource("LabelSettings_35c8b")
+
+[node name="VSeparator5" type="VSeparator" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_spxys")
+
+[node name="ActionSwap" type="HBoxContainer" parent="AspectRatioContainer/Frame/Rules"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="AspectRatioContainer/Frame/Rules/ActionSwap"]
+layout_mode = 2
+texture = ExtResource("4_sf1gv")
+stretch_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="AspectRatioContainer/Frame/Rules/ActionSwap"]
+custom_minimum_size = Vector2(3, 0)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_o3gpe")
+
+[node name="Swap_" type="Label" parent="AspectRatioContainer/Frame/Rules/ActionSwap"]
+custom_minimum_size = Vector2(749, 0)
+layout_mode = 2
+text = "Swap: Choose a card from your opponent’s hand  and swap it with the card played."
+label_settings = SubResource("LabelSettings_35c8b")
+autowrap_mode = 2
+
+[node name="VSeparator6" type="VSeparator" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_spxys")
+
+[node name="ActionPass" type="HBoxContainer" parent="AspectRatioContainer/Frame/Rules"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="AspectRatioContainer/Frame/Rules/ActionPass"]
+layout_mode = 2
+texture = ExtResource("4_sf1gv")
+stretch_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="AspectRatioContainer/Frame/Rules/ActionPass"]
+custom_minimum_size = Vector2(3, 0)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_o3gpe")
+
+[node name="Swap_" type="Label" parent="AspectRatioContainer/Frame/Rules/ActionPass"]
+custom_minimum_size = Vector2(749, 0)
+layout_mode = 2
+text = "Pass: Forgo taking your remaining action(s)."
+label_settings = SubResource("LabelSettings_35c8b")
+autowrap_mode = 2
+
+[node name="VSeparator7" type="VSeparator" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_spxys")
+
+[node name="LockedCards" type="Label" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(817, 0)
+layout_mode = 2
+text = "Locked Cards: Any card you receive from a Draw or Swap is locked and cannot be changed again for the rest of the round.
+"
+label_settings = SubResource("LabelSettings_ipq1q")
+autowrap_mode = 3
+
+[node name="WinningRounds" type="Label" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(817, 0)
+layout_mode = 2
+text = "Winning a Round: After both players take their turns, all cards are revealed. The player with the lowest total value in their hand wins the round."
+label_settings = SubResource("LabelSettings_ipq1q")
+autowrap_mode = 3
+
+[node name="VSeparator8" type="VSeparator" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_spxys")
+
+[node name="Scoring" type="Label" parent="AspectRatioContainer/Frame/Rules"]
+custom_minimum_size = Vector2(817, 0)
+layout_mode = 2
+text = "Scoring: The winner adds their hand total to their overall score. If there's a tie, neither player get the points."
+label_settings = SubResource("LabelSettings_ipq1q")
+autowrap_mode = 3

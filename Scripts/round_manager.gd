@@ -40,7 +40,7 @@ var opponent_turn_completed: bool = false
 # Score Tracking
 var player_game_score: int = 0
 var opponent_game_score: int = 0
-var best_player_round_score: int = 0
+var best_player_round_score: int = 999  # Sentinel: no best round yet (valid scores: 8-40, lower is better)
 var best_player_round_cards: Array = []
 
 # Stats Tracking
@@ -186,6 +186,13 @@ func _connect_signals() -> void:
 				play_again_btn.connect("pressed", Callable(self, "_on_play_again_pressed"))
 			else:
 				pass
+	
+	# Connect Quit button
+	if game_over_screen and game_over_screen.has_node("transparentBG/Buttons/QuitButton"):
+		var quit_btn = game_over_screen.get_node("transparentBG/Buttons/QuitButton")
+		if quit_btn and quit_btn.has_signal("pressed"):
+			if not quit_btn.is_connected("pressed", Callable(self, "_on_quit_button_pressed")):
+				quit_btn.connect("pressed", Callable(self, "_on_quit_button_pressed"))
 
 
 ## Starts the game
@@ -196,7 +203,11 @@ func start_game() -> void:
 	current_round = 1
 	player_game_score = 0
 	opponent_game_score = 0
-	best_player_round_score = 0
+	best_player_round_score = 999  # Reset to sentinel value (no best round yet)
+	# Free any old card copies
+	for card in best_player_round_cards:
+		if card and is_instance_valid(card):
+			card.queue_free()
 	best_player_round_cards.clear()
 	total_swaps_used = 0
 	total_draws_used = 0
@@ -295,6 +306,10 @@ func start_player_turn() -> void:
 	
 	current_turn_state = TurnState.PLAYER_TURN
 	print("=== ROUND_MANAGER: State changed to PLAYER_TURN ===")
+	# Play player turn sound
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm:
+		sm.play_player_turn()
 	if play_area:
 		play_area.set_current_player("player")
 	
@@ -362,6 +377,10 @@ func start_opponent_turn() -> void:
 	# Opponent's turn starting
 	current_turn_state = TurnState.OPPONENT_TURN
 	print("=== ROUND_MANAGER: State changed to OPPONENT_TURN ===")
+	# Play opponent turn sound
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm:
+		sm.play_opponent_turn()
 	if play_area:
 		play_area.set_current_player("opponent")
 	
@@ -426,6 +445,12 @@ func _simulate_opponent_turn() -> void:
 			# Clear ALL remaining actions when passing
 			if opponent_score_panel and opponent_score_panel.has_method("clear_actions"):
 				opponent_score_panel.clear_actions()
+			
+			# Play opponent pass sound
+			var sm = get_node_or_null("/root/SoundManager")
+			if sm:
+				sm.play_pass()
+			
 			if main_node and main_node.has_method("show_pass_message"):
 				await main_node.show_pass_message("Opponent")
 			else:
@@ -534,9 +559,19 @@ func _ai_simulate_thinking_on_player_cards() -> void:
 		return
 	
 	# Highlight each card briefly (simulating consideration)
+	var card_index = 0
 	for card in player_cards:
 		if not card or not is_instance_valid(card):
 			continue
+		
+		# Play selecting swap sound with varying pitch for each card
+		var sm = get_node_or_null("/root/SoundManager")
+		if sm:
+			# Vary pitch slightly for each card (0.9 to 1.1 range)
+			var pitch = 0.9 + (card_index * 0.05)
+			sm.play_selecting_swap(pitch)
+		
+		card_index += 1
 		
 		# Create a highlight effect
 		var highlight = ColorRect.new()
@@ -630,6 +665,11 @@ func _on_player_pass_pressed() -> void:
 		return
 	# Player passed
 	total_passes_taken += 1
+
+	# Play pass sound
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm:
+		sm.play_pass()
 	
 	# Clear any remaining actions when player passes
 	if player_score_panel:
@@ -669,7 +709,7 @@ func _on_card_effect_executed(_card: Card, effect_type: String, result: Dictiona
 
 ## Called when play again button is pressed
 func _on_play_again_pressed() -> void:
-	print("DEBUG: Play Again pressed - resetting game")
+	print("DEBUG: Play Again pressed - FULL GAME RESET")
 	
 	# Set restart flag to block any ongoing game logic
 	is_restarting = true
@@ -678,14 +718,47 @@ func _on_play_again_pressed() -> void:
 	if game_over_screen:
 		game_over_screen.hide_screen()
 	
-	# Reset game state - IMPORTANT: Reset state before clearing/recreating
-	current_turn_state = TurnState.PLAYER_TURN  # Reset to a valid state
+	# ========== CLEAR ALL GAME DATA ==========
+	# Reset turn state
+	current_turn_state = TurnState.PLAYER_TURN
 	player_turn_completed = false
 	opponent_turn_completed = false
 	
+	# Reset round/score tracking
+	current_round = 0
+	player_game_score = 0
+	opponent_game_score = 0
+	best_player_round_score = 999  # Reset to sentinel value (no best round yet)
+	# Free any old card copies
+	for card in best_player_round_cards:
+		if card and is_instance_valid(card):
+			card.queue_free()
+	best_player_round_cards.clear()
+	total_swaps_used = 0
+	total_draws_used = 0
+	total_passes_taken = 0
+	player_goes_first = true
+	
+	# Clear effects manager state
+	var effects_manager = get_node_or_null("/root/EffectsManager")
+	if not effects_manager:
+		effects_manager = get_node_or_null("/root/Main/EffectsManager")
+	if effects_manager:
+		effects_manager.locked_cards.clear()
+		effects_manager._cards_locked_during_effect.clear()
+		effects_manager._effect_queue.clear()
+		effects_manager._processing_effects = false
+		effects_manager._completed_results.clear()
+		effects_manager.is_waiting_for_swap_selection = false
+		effects_manager.pending_swap_card = null
+		effects_manager.pending_swap_player = ""
+		effects_manager.pending_swap_owner_hand = null
+	
+	# Reset main node state
 	if main_node:
-		# Reset surrender flag
 		main_node.game_surrendered = false
+		main_node._align_deck_attempts = 0
+		main_node._align_playarea_attempts = 0
 		
 		# Cancel any stuck card dragging
 		if main_node.has_method("_cancel_all_card_dragging"):
@@ -693,19 +766,16 @@ func _on_play_again_pressed() -> void:
 			print("DEBUG: Canceled card dragging")
 		
 		# Unpause if still paused
-		print("DEBUG: Game paused state before unpause:", get_tree().paused)
 		if get_tree().paused:
 			get_tree().paused = false
 			print("DEBUG: Game unpaused")
-		else:
-			print("DEBUG: Game was already unpaused")
 		
 		# Re-enable gameplay elements
 		if main_node.has_method("_set_gameplay_enabled"):
 			main_node._set_gameplay_enabled(true)
 			print("DEBUG: Gameplay re-enabled")
 	
-	# Clear all hands and discard pile
+	# Clear all card containers
 	if player_hand:
 		player_hand.clear_cards()
 	if opponent_hand:
@@ -732,6 +802,18 @@ func _on_play_again_pressed() -> void:
 	print("DEBUG: Starting new game with deck count:", deck.get_card_count() if deck else 0)
 	# Starting new game
 	start_game()
+
+
+## Called when quit button is pressed
+func _on_quit_button_pressed() -> void:
+	print("DEBUG: Quit button pressed - returning to start screen")
+	
+	# Unpause the game if paused
+	if get_tree().paused:
+		get_tree().paused = false
+	
+	# Change to start screen
+	get_tree().change_scene_to_file("res://Scenes/GameStartScreen.tscn")
 
 
 ## Ends the player's turn
@@ -820,17 +902,31 @@ func end_round() -> void:
 	var player_round_total = totals.get("player", 0)
 	var opponent_round_total = totals.get("opponent", 0)
 	
+	print("DEBUG: Round ", current_round, " results - Player:", player_round_total, " Opponent:", opponent_round_total)
+	print("DEBUG: Current best_player_round_score:", best_player_round_score)
+	print("DEBUG: Player cards count:", player_cards.size())
+	
 	# Award points to winner (lower score wins the round)
 	if player_round_total < opponent_round_total:
 		player_game_score += player_round_total
 		if player_score_panel:
 			player_score_panel.set_score(player_game_score)
 		
-		# Track best round
-		if player_round_total > best_player_round_score:
+		# Track best round (lower is better, always save first win or if score is better/lower than previous best)
+		if player_round_total < best_player_round_score:
+			print("DEBUG: NEW BEST ROUND! Score:", player_round_total, " Saving", player_cards.size(), "cards")
 			best_player_round_score = player_round_total
-			best_player_round_cards = player_cards.duplicate()
+			# Create deep copies of the cards NOW before they get discarded
+			best_player_round_cards.clear()
+			for card in player_cards:
+				if card and is_instance_valid(card):
+					var card_copy = card.duplicate()
+					best_player_round_cards.append(card_copy)
+			print("DEBUG: best_player_round_cards now has", best_player_round_cards.size(), "card copies")
+		else:
+			print("DEBUG: Not a best round (", player_round_total, " not better than ", best_player_round_score, ")")
 	elif opponent_round_total < player_round_total:
+		print("DEBUG: Opponent won this round")
 		opponent_game_score += opponent_round_total
 		if opponent_score_panel:
 			opponent_score_panel.set_score(opponent_game_score)
@@ -908,6 +1004,11 @@ func end_game() -> void:
 	
 	# Show game over screen
 	if game_over_screen:
+		print("DEBUG: Showing game over screen")
+		print("DEBUG: best_player_round_score:", best_player_round_score)
+		print("DEBUG: best_player_round_cards.size():", best_player_round_cards.size())
+		print("DEBUG: Passing", best_player_round_cards.size(), "cards to game_over_screen")
+		
 	# Calling game_over_screen.show_game_over()
 		if game_over_screen.has_method("show_game_over_surrender") and surrendered:
 			# Use surrender version if available

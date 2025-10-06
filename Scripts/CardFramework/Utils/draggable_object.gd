@@ -31,6 +31,9 @@ extends Control
 
 ## Helper to call the project's autoload logger (if present).
 func _log_tracking(args: Array) -> void:
+	# Guard: Can't access autoload if not in scene tree
+	if not is_inside_tree():
+		return
 	var _l = get_node_or_null("/root/LOG")
 	if _l and _l.has_method("tracking_args"):
 		_l.tracking_args(args)
@@ -91,8 +94,8 @@ var original_rotation: float
 var destination_degree: float
 
 # Tween objects
-var move_tween: Tween
-var hover_tween: Tween
+var move_tween: Tween = null
+var hover_tween: Tween = null
 
 # State transition rules
 var allowed_transitions = {
@@ -115,6 +118,22 @@ func _ready() -> void:
 	original_scale = scale
 	original_hover_rotation = rotation
 	stored_z_index = z_index
+
+
+## Clean up resources when the node is freed to prevent errors.
+func _notification(what: int) -> void:
+	# Called right before a node is removed from the SceneTree and freed.
+	if what == NOTIFICATION_PREDELETE:
+		# Stop any active movement tween to prevent it from trying to call 
+		# methods or modify properties on a non-existent object.
+		if move_tween and move_tween.is_valid():
+			move_tween.kill()
+			move_tween = null
+		
+		# Stop any active hover tween for the same reason.
+		if hover_tween and hover_tween.is_valid():
+			hover_tween.kill()
+			hover_tween = null
 
 
 ## Safely transitions between interaction states using predefined rules.
@@ -155,7 +174,7 @@ func _enter_state(state: DraggableState, from_state: DraggableState) -> void:
 			z_index = stored_z_index + CardFrameworkSettings.VISUAL_DRAG_Z_OFFSET
 			_start_hover_animation()
 			# Play card touch sound on hover
-			if has_node("/root/SoundManager"):
+			if is_inside_tree() and has_node("/root/SoundManager"):
 				get_node("/root/SoundManager").play_card_touch(-5.0)
 			
 		DraggableState.HOLDING:
@@ -168,7 +187,7 @@ func _enter_state(state: DraggableState, from_state: DraggableState) -> void:
 			z_index = stored_z_index + CardFrameworkSettings.VISUAL_DRAG_Z_OFFSET
 			rotation = 0
 			# Play card touch sound when picking up
-			if has_node("/root/SoundManager"):
+			if is_inside_tree() and has_node("/root/SoundManager"):
 				get_node("/root/SoundManager").play_card_touch(-3.0)
 			
 		DraggableState.MOVING:
@@ -249,6 +268,10 @@ func _start_hover_animation() -> void:
 	# Store current position before animation
 	current_hover_position = position
 	
+	# Guard: Don't create tween if not in scene tree
+	if not is_inside_tree():
+		return
+	
 	# Create new hover tween
 	hover_tween = create_tween()
 	hover_tween.set_parallel(true)  # Allow multiple properties to animate simultaneously
@@ -273,6 +296,10 @@ func _stop_hover_animation() -> void:
 	if hover_tween and hover_tween.is_valid():
 		hover_tween.kill()
 		hover_tween = null
+	
+	# Guard: Don't create tween if not in scene tree
+	if not is_inside_tree():
+		return
 	
 	# Create new tween to return to original state
 	hover_tween = create_tween()
@@ -355,6 +382,10 @@ func _is_topmost_at_mouse() -> bool:
 
 
 func _on_mouse_enter() -> void:
+	# Guard: Ignore if not in scene tree
+	if not is_inside_tree():
+		return
+		
 	is_mouse_inside = true
 	
 	# Debug locked cards
@@ -389,6 +420,10 @@ func _on_mouse_enter() -> void:
 
 
 func _on_mouse_exit() -> void:
+	# Guard: Ignore if not in scene tree
+	if not is_inside_tree():
+		return
+		
 	is_mouse_inside = false
 	match current_state:
 		DraggableState.HOVERING:
@@ -396,6 +431,10 @@ func _on_mouse_exit() -> void:
 
 
 func _on_gui_input(event: InputEvent) -> void:
+	# Guard: Ignore input if not in scene tree
+	if not is_inside_tree():
+		return
+	
 	# Defensive: if the card is locked, ignore mouse button input entirely
 	if has_meta("is_locked"):
 		if event is InputEventMouseButton:
@@ -446,12 +485,22 @@ func move(_target_destination: Vector2, degree: float) -> void:
 	var distance = global_position.distance_to(_target_destination)
 	var duration = distance / moving_speed
 	
+	# Guard: Don't create tween if not in scene tree
+	if not is_inside_tree():
+		return
+	
 	move_tween = create_tween()
 	move_tween.tween_property(self, "global_position", target_destination, duration)
 	move_tween.tween_callback(_finish_move)
 
 
 func _handle_mouse_button(mouse_event: InputEventMouseButton) -> void:
+	# 🛑 SAFETY CHECK 🛑
+	# If the object is no longer in the scene tree (e.g., scene is changing),
+	# immediately stop processing the input event to prevent errors.
+	if not is_inside_tree():
+		return
+		
 	if mouse_event.button_index != MOUSE_BUTTON_LEFT:
 		return
 	
@@ -473,6 +522,10 @@ func return_to_original() -> void:
 
 
 func _handle_mouse_pressed() -> void:
+	# Safety check: prevent processing if not in tree
+	if not is_inside_tree():
+		return
+		
 	is_pressed = true
 	
 	# Debug locked cards
@@ -492,6 +545,10 @@ func _handle_mouse_pressed() -> void:
 
 
 func _handle_mouse_released() -> void:
+	# Safety check: prevent processing if not in tree
+	if not is_inside_tree():
+		return
+		
 	is_pressed = false
 	match current_state:
 		DraggableState.HOLDING:

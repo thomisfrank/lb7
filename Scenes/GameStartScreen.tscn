@@ -1,13 +1,13 @@
-[gd_scene load_steps=14 format=3 uid="uid://td7e7v2vm2wj"]
+[gd_scene load_steps=19 format=3 uid="uid://c8u36rqmd3dm1"]
 
 [ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_akxvb"]
 [ext_resource type="Script" uid="uid://b6veq26su6ju8" path="res://Scripts/game_start_screen.gd" id="1_game_start"]
-[ext_resource type="Script" uid="uid://p7kttis5k3yg" path="res://Scripts/vfx_aware_label.gd" id="1_vfx_aware"]
+[ext_resource type="Script" path="res://Scripts/vfx_aware_label.gd" id="1_vfx_aware"]
 [ext_resource type="PackedScene" uid="uid://2gbx8t47wulx" path="res://Scenes/UI/backgrounds.tscn" id="2_fdmwx"]
 [ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="3_1kqsy"]
-[ext_resource type="FontFile" uid="uid://beuodt20bqexm" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="4_f8dg7"]
+[ext_resource type="FontFile" uid="uid://bxmcvgg4mm776" path="res://Assets/fonts/Jacquard24-Regular.ttf" id="4_f8dg7"]
 [ext_resource type="PackedScene" uid="uid://cvjib4et5vg1t" path="res://Scenes/Button.tscn" id="5_bvuso"]
-[ext_resource type="PackedScene" uid="uid://6ef64w6o06wq" path="res://Scenes/settingsPanel.tscn" id="6_f8dg7"]
+[ext_resource type="PackedScene" path="res://Scenes/settingsPanel.tscn" id="6_f8dg7"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_oy2lu"]
 shader = ExtResource("1_akxvb")
@@ -36,6 +36,16 @@ font_size = 150
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1kqsy"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f8dg7"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7qwbu"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_s0o2v"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6ntrf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_crfry"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6s2m8"]
 
 [node name="GameStart" type="Node"]
 script = ExtResource("1_game_start")
@@ -92,15 +102,23 @@ vertical_alignment = 1
 script = ExtResource("1_vfx_aware")
 
 [node name="VSeparator2" type="VSeparator" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 200)
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxEmpty_1kqsy")
 
 [node name="StartButton" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer" instance=ExtResource("5_bvuso")]
 layout_mode = 2
 
+[node name="VSeparator3" type="VSeparator" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_f8dg7")
+
+[node name="HowPlayButton" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer" instance=ExtResource("5_bvuso")]
+layout_mode = 2
+
 [node name="VSeparator" type="VSeparator" parent="SubViewportContainer/SubViewport/UILayer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 200)
+custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxEmpty_f8dg7")
 
@@ -108,9 +126,14 @@ theme_override_styles/separator = SubResource("StyleBoxEmpty_f8dg7")
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9254902, 0.9411765, 0.94509804, 1)
 theme_override_colors/font_pressed_color = Color(0.15294118, 0.68235296, 0.3764706, 1)
-theme_override_colors/font_hover_pressed_color = Color(0.94509804, 0.76862746, 0.05882353, 1)
+theme_override_colors/font_hover_color = Color(0.94509804, 0.76862746, 0.05882353, 1)
 theme_override_fonts/font = ExtResource("4_f8dg7")
 theme_override_font_sizes/font_size = 50
+theme_override_styles/normal = SubResource("StyleBoxEmpty_7qwbu")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_s0o2v")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_6ntrf")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_crfry")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_6s2m8")
 text = "-- Settings --"
 flat = true
 

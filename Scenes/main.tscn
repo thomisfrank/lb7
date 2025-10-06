@@ -1,31 +1,35 @@
-[gd_scene load_steps=32 format=3 uid="uid://ctfxrhcbqydwj"]
+[gd_scene load_steps=36 format=3 uid="uid://ctfxrhcbqydwj"]
 
 [ext_resource type="Script" uid="uid://bbejvgriltre2" path="res://Scripts/main.gd" id="1_21xkr"]
 [ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_kry3j"]
-[ext_resource type="PackedScene" uid="uid://b46d20hycywxy" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_21xkr"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Core/card_manager.tscn" id="2_21xkr"]
 [ext_resource type="PackedScene" uid="uid://brwqfgagcvnns" path="res://Scenes/CardFramework/Core/custom_card_factory.tscn" id="3_6bp64"]
 [ext_resource type="PackedScene" uid="uid://2gbx8t47wulx" path="res://Scenes/UI/backgrounds.tscn" id="3_344ge"]
-[ext_resource type="PackedScene" uid="uid://g6wrsm5a0fqd" path="res://Scenes/CardFramework/Containers/pile.tscn" id="4_344ge"]
-[ext_resource type="PackedScene" uid="uid://bhfvwys38ys5e" path="res://Scenes/CardFramework/Containers/hand.tscn" id="5_ynf5e"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/pile.tscn" id="4_344ge"]
+[ext_resource type="PackedScene" path="res://Scenes/CardFramework/Containers/hand.tscn" id="5_ynf5e"]
 [ext_resource type="PackedScene" uid="uid://cuovayfsjg0y1" path="res://Scenes/CardFramework/Containers/drop_zone.tscn" id="7_6bp64"]
 [ext_resource type="PackedScene" uid="uid://cmwnhwwwiwc82" path="res://Scenes/UI/deck_counter.tscn" id="8_ynf5e"]
-[ext_resource type="PackedScene" uid="uid://i5glty1c07x1" path="res://Scenes/play_area.tscn" id="9_hptm8"]
+[ext_resource type="PackedScene" path="res://Scenes/play_area.tscn" id="9_hptm8"]
 [ext_resource type="PackedScene" uid="uid://digcvx5ewwoln" path="res://Scenes/info_box_l.tscn" id="10_6iyac"]
 [ext_resource type="PackedScene" uid="uid://dvc0c41lxbqbk" path="res://Scenes/game_state_screen.tscn" id="11_d1ilt"]
 [ext_resource type="PackedScene" uid="uid://drlqn0gjqk7ma" path="res://Scenes/RoundCounter.tscn" id="13_fdnlq"]
 [ext_resource type="PackedScene" uid="uid://lvve3f8bafe2" path="res://Scenes/round_total_screen.tscn" id="13_jkdf5"]
 [ext_resource type="PackedScene" uid="uid://beorjeh8ott8h" path="res://Scenes/game_over_screen.tscn" id="14_k12tt"]
 [ext_resource type="PackedScene" uid="uid://ccmgkdpjuqpcq" path="res://Scenes/score_action_panel.tscn" id="15_wsu2k"]
-[ext_resource type="PackedScene" uid="uid://bvf3ukgvgwmwq" path="res://Scenes/pass_message.tscn" id="17_h1bgf"]
-[ext_resource type="Texture2D" uid="uid://qqxpeb161ekh" path="res://Assets/UI/Options.png" id="18_hibaj"]
+[ext_resource type="PackedScene" path="res://Scenes/pass_message.tscn" id="17_h1bgf"]
+[ext_resource type="Texture2D" uid="uid://dxb76go6cikd4" path="res://Assets/UI/Options.png" id="18_hibaj"]
 [ext_resource type="Texture2D" uid="uid://dlb5f3p8dl0uv" path="res://Assets/UI/OptionsPressed.png" id="19_pdsj5"]
 [ext_resource type="Texture2D" uid="uid://u5l4as5unag4" path="res://Assets/UI/OptionsHover.png" id="20_ee4r6"]
-[ext_resource type="PackedScene" uid="uid://6ef64w6o06wq" path="res://Scenes/settingsPanel.tscn" id="21_cbgmd"]
-[ext_resource type="FontFile" uid="uid://cd0mg1j1e8pyd" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="22_1w6v2"]
-[ext_resource type="Texture2D" uid="uid://dcsl5jlrbntjk" path="res://Assets/animation_slides/flag/Flag0.png" id="23_ueoa1"]
-[ext_resource type="Texture2D" uid="uid://nr2vpa18blsq" path="res://Assets/animation_slides/flag/Flag1.png" id="24_6vcvc"]
-[ext_resource type="Texture2D" uid="uid://tw625hyheexg" path="res://Assets/animation_slides/flag/Flag2.png" id="25_7k868"]
-[ext_resource type="Texture2D" uid="uid://cv7aspra6ucu6" path="res://Assets/animation_slides/flag/Flag3.png" id="26_hpc6h"]
+[ext_resource type="PackedScene" path="res://Scenes/settingsPanel.tscn" id="21_cbgmd"]
+[ext_resource type="FontFile" uid="uid://bp81hts6eecnx" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="22_1w6v2"]
+[ext_resource type="Texture2D" uid="uid://bxlx3mqqaqj7n" path="res://Assets/animation_slides/flag/Flag0.png" id="23_ueoa1"]
+[ext_resource type="Texture2D" uid="uid://df0ymxsesvl8b" path="res://Assets/animation_slides/flag/Flag1.png" id="24_6vcvc"]
+[ext_resource type="Texture2D" uid="uid://c73d4j0x1ps2b" path="res://Assets/animation_slides/flag/Flag2.png" id="25_7k868"]
+[ext_resource type="Texture2D" uid="uid://bhxucqs02msmd" path="res://Assets/animation_slides/flag/Flag3.png" id="26_hpc6h"]
+[ext_resource type="Texture2D" uid="uid://djr2pl71rytp4" path="res://Assets/UI/ToolTipIngress.png" id="27_7k868"]
+[ext_resource type="Texture2D" uid="uid://bu5lfpgx57emv" path="res://Assets/UI/ToolTipIngressHover.png" id="28_hpc6h"]
+[ext_resource type="Texture2D" uid="uid://b800cpmy4u54q" path="res://Assets/UI/ToolTipIngressPressed.png" id="29_kltya"]
+[ext_resource type="PackedScene" uid="uid://b1ecybp45otqt" path="res://Scenes/how_to_play.tscn" id="30_e08e2"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0xm2m"]
 shader = ExtResource("1_kry3j")
@@ -261,3 +265,27 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_e08e2")
 theme_override_styles/hover = SubResource("StyleBoxFlat_neg2b")
 text = "Give up"
 icon = SubResource("AnimatedTexture_r33sp")
+
+[node name="ToolTipButton2" type="TextureButton" parent="SubViewportContainer/SubViewport/UILayer/OptionsButton"]
+visible = false
+z_index = 4096
+layout_mode = 0
+offset_left = -323.4427
+offset_top = -931.2641
+offset_right = -197.44269
+offset_bottom = -805.2641
+scale = Vector2(1.8262955, 1.8262955)
+texture_normal = ExtResource("27_7k868")
+texture_pressed = ExtResource("28_hpc6h")
+texture_hover = ExtResource("29_kltya")
+
+[node name="HowToPlay" parent="SubViewportContainer/SubViewport/UILayer/OptionsButton/ToolTipButton2" instance=ExtResource("30_e08e2")]
+visible = false
+layout_mode = 1
+anchor_left = -2.5259688
+anchor_top = -1.643239
+anchor_right = 2.770418
+anchor_bottom = 5.2013235
+offset_right = 146.48535
+offset_bottom = 189.30414
+scale = Vector2(0.820005, 0.820005)

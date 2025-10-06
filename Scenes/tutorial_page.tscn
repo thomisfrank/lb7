@@ -1,0 +1,84 @@
+[gd_scene load_steps=7 format=3 uid="uid://bjujtg7wiwp5x"]
+
+[ext_resource type="Shader" uid="uid://b7xn1mo656jm6" path="res://Scripts/Shaders/post.gdshader" id="1_hfqqn"]
+[ext_resource type="Script" uid="uid://de2n5a3qthplw" path="res://Scripts/tutorial_page.gd" id="1_tutorial"]
+[ext_resource type="PackedScene" uid="uid://2gbx8t47wulx" path="res://Scenes/UI/backgrounds.tscn" id="2_h171a"]
+[ext_resource type="PackedScene" uid="uid://b1ecybp45otqt" path="res://Scenes/how_to_play.tscn" id="3_6of3j"]
+[ext_resource type="PackedScene" uid="uid://cvjib4et5vg1t" path="res://Scenes/Button.tscn" id="4_swonn"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_d73fv"]
+shader = ExtResource("1_hfqqn")
+shader_parameter/pixel_size = 5.4830002129425
+shader_parameter/scanline_darkness = 0.166000007885
+shader_parameter/scanline_spacing = 3.530000120175
+shader_parameter/curvature_amount = 0.13200000627
+shader_parameter/aberration_amount = 0.00400000019
+shader_parameter/noise_amount = 0.150000007125
+shader_parameter/overlay_strength = 0.206000009785
+shader_parameter/bloom_threshold = 0.4370000207575
+shader_parameter/bloom_intensity = 0.138000006555
+shader_parameter/flicker_amount = 0.21600001026
+shader_parameter/flicker_speed = 2.6950001280125
+
+[node name="TutorialPage" type="SubViewportContainer"]
+material = SubResource("ShaderMaterial_d73fv")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_tutorial")
+
+[node name="SubViewport" type="SubViewport" parent="."]
+transparent_bg = true
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="BackgroundLayer" type="CanvasLayer" parent="SubViewport"]
+layer = -1
+
+[node name="backgrounds" parent="SubViewport/BackgroundLayer" instance=ExtResource("2_h171a")]
+visibility_layer = 524288
+
+[node name="Control" type="Control" parent="SubViewport"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HowToPlay" parent="SubViewport/Control" instance=ExtResource("3_6of3j")]
+layout_mode = 1
+anchor_left = 0.99687505
+anchor_top = 0.5074074
+anchor_right = 0.99687505
+anchor_bottom = 0.5074074
+offset_left = -880.0
+offset_top = -540.0
+offset_right = -30.0
+offset_bottom = 540.0
+grow_horizontal = 0
+scale = Vector2(0.9876827, 0.9876827)
+
+[node name="BackToMenu" parent="SubViewport/Control" instance=ExtResource("4_swonn")]
+layout_mode = 1
+anchor_left = 0.05
+anchor_top = 0.108333334
+anchor_right = 0.25833333
+anchor_bottom = 0.22833331
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="GetStarted" parent="SubViewport/Control" instance=ExtResource("4_swonn")]
+layout_mode = 1
+anchor_left = 0.05
+anchor_top = 0.81574076
+anchor_right = 0.25833333
+anchor_bottom = 0.93574077
+grow_horizontal = 1
+grow_vertical = 1

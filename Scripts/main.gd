@@ -21,9 +21,15 @@ const CF_SETTINGS = preload("res://Scripts/CardFramework/Core/card_framework_set
 @onready var options_button: TextureButton = $SubViewportContainer/SubViewport/UILayer/OptionsButton
 @onready var settings_panel: Control = $SubViewportContainer/SubViewport/UILayer/OptionsButton/"Settings Panel"
 @onready var surrender_button: Button = $SubViewportContainer/SubViewport/UILayer/OptionsButton/"Settings Panel"/SurrenderButton
+@onready var tooltip_button: TextureButton = $SubViewportContainer/SubViewport/UILayer/OptionsButton/ToolTipButton2
+@onready var how_to_play_panel: Control = $SubViewportContainer/SubViewport/UILayer/OptionsButton/ToolTipButton2/HowToPlay
+@onready var viewport_container: SubViewportContainer = $SubViewportContainer
 
 # RoundManager
 var round_manager: Node
+
+# Track original shader material for VFX toggle
+var original_shader_material: ShaderMaterial = null
 
 @export var desired_deck_size: int = 0 # 0 = create one of each available card
 @export var debug_deck_counter: bool = false
@@ -132,9 +138,28 @@ func _ready():
 	if surrender_button:
 		surrender_button.pressed.connect(_on_surrender_pressed)
 	
-	# Ensure settings panel is hidden initially
+	# Connect tooltip button for how to play
+	if tooltip_button:
+		tooltip_button.process_mode = Node.PROCESS_MODE_ALWAYS
+		tooltip_button.pressed.connect(_on_tooltip_pressed)
+		tooltip_button.visible = false  # Hidden until settings panel opens
+		print("DEBUG: Tooltip button set to PROCESS_MODE_ALWAYS and initially hidden")
+	
+	# Ensure settings panel and how to play are hidden initially
 	if settings_panel:
 		settings_panel.visible = false
+	
+	if how_to_play_panel:
+		how_to_play_panel.visible = false
+	
+	# Store original shader material and connect to VFX settings
+	if viewport_container:
+		original_shader_material = viewport_container.material
+		var settings_mgr = get_node_or_null("/root/SettingsManager")
+		if settings_mgr and settings_mgr.has_signal("visual_effects_changed"):
+			settings_mgr.visual_effects_changed.connect(_on_visual_effects_changed)
+			# Apply current setting immediately
+			_on_visual_effects_changed(settings_mgr.visual_effects_enabled)
 
 
 func _create_test_cards():
@@ -199,6 +224,11 @@ func _create_test_cards():
 
 	# Update deck counter after all cards are created
 	_update_deck_counter()
+
+	# Play deck load sound
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm:
+		sm.play_deck_load()
 	
 	# Start the round manager now that the deck is ready
 	# ONLY if we're not manually managing the start (e.g., from Play Again)
@@ -347,9 +377,14 @@ func _unhandled_input(event):
 		# LOG.log_args(["_unhandled_input called while not inside tree on node:", self.get_path()])
 		return
 
-	# Close settings panel when clicking outside of it
+	# Close panels when clicking outside of them
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if settings_panel and settings_panel.visible:
+		# Check how to play panel first (it takes priority when visible)
+		if how_to_play_panel and how_to_play_panel.visible:
+			if not how_to_play_panel.get_global_rect().has_point(event.global_position):
+				_close_how_to_play_panel()
+		# Check settings panel
+		elif settings_panel and settings_panel.visible:
 			if not settings_panel.get_global_rect().has_point(event.global_position):
 				_close_options_panel()
 
@@ -739,6 +774,11 @@ func _on_options_pressed() -> void:
 		_set_panel_process_mode_recursive(settings_panel, Node.PROCESS_MODE_ALWAYS)
 		print("DEBUG: Panel process mode set to ALWAYS")
 		
+		# Show tooltip button when settings panel opens
+		if tooltip_button:
+			tooltip_button.visible = true
+			print("DEBUG: Tooltip button made visible")
+		
 		# Cancel any active card dragging
 		_cancel_all_card_dragging()
 		
@@ -771,11 +811,61 @@ func _on_surrender_pressed() -> void:
 			round_manager.end_game()
 
 
+## Called when tooltip/help button is pressed
+func _on_tooltip_pressed() -> void:
+	print("DEBUG: Tooltip button pressed!")
+	if how_to_play_panel:
+		print("DEBUG: How to play panel found, making visible")
+		how_to_play_panel.visible = true
+		# Set panel to process even when paused
+		_set_panel_process_mode_recursive(how_to_play_panel, Node.PROCESS_MODE_ALWAYS)
+		print("DEBUG: How to play panel process mode set to ALWAYS")
+		
+		# Hide settings panel when showing how to play
+		if settings_panel:
+			settings_panel.visible = false
+		
+		# Cancel any active card dragging
+		_cancel_all_card_dragging()
+		
+		# Disable gameplay elements
+		_set_gameplay_enabled(false)
+		
+		# Pause the game tree to freeze gameplay
+		get_tree().paused = true
+		print("DEBUG: Game paused")
+		LOG.tracking("How to play panel opened - game paused")
+
+
+## Close the how to play panel and return to settings
+func _close_how_to_play_panel() -> void:
+	print("DEBUG: Closing how to play panel")
+	if how_to_play_panel:
+		how_to_play_panel.visible = false
+	
+	# Show settings panel again
+	if settings_panel:
+		settings_panel.visible = true
+		print("DEBUG: Settings panel shown again")
+	
+	LOG.tracking("How to play panel closed - returned to settings")
+
+
 ## Close the options panel and unpause the game
 func _close_options_panel() -> void:
 	print("DEBUG: Closing options panel")
 	if settings_panel:
 		settings_panel.visible = false
+		
+		# Hide tooltip button when settings panel closes
+		if tooltip_button:
+			tooltip_button.visible = false
+			print("DEBUG: Tooltip button hidden")
+		
+		# Also hide how to play panel if it's visible
+		if how_to_play_panel:
+			how_to_play_panel.visible = false
+		
 		# Only unpause if game hasn't ended
 		if not game_surrendered:
 			# Re-enable gameplay elements
@@ -831,3 +921,18 @@ func _cancel_all_card_dragging() -> void:
 			# DraggableState.IDLE = 0
 			card._change_state(0)  # Force to IDLE state
 			print("DEBUG: Reset card ", card.name, " to IDLE")
+
+
+## Handle visual effects toggle (accessibility)
+func _on_visual_effects_changed(enabled: bool) -> void:
+	if not viewport_container:
+		return
+	
+	if enabled:
+		# Restore original shader material
+		viewport_container.material = original_shader_material
+	else:
+		# Disable all post-processing effects for accessibility
+		viewport_container.material = null
+	
+	print("DEBUG: VFX post-processing ", "enabled" if enabled else "disabled")

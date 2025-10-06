@@ -100,7 +100,7 @@ func _update_target_positions() -> void:
 	# Play hand fill sound when cards are rearranged (but not on initial setup)
 	# Only play if we have cards, the hand is visible, and this is a rearrangement
 	if _held_cards.size() > 0 and is_visible_in_tree() and _has_been_laid_out:
-		if has_node("/root/SoundManager"):
+		if is_inside_tree() and has_node("/root/SoundManager"):
 			get_node("/root/SoundManager").play_hand_fill(-4.0)
 	
 	# Mark that we've laid out cards at least once

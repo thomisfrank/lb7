@@ -221,18 +221,26 @@ func execute_draw_effect(played_card: Card, player: String) -> Dictionary:
 	# 2. Wait for 0.5 seconds
 	await get_tree().create_timer(0.5).timeout
 
-	# 3. Draw a new card
+	# 3. Draw a new card (skip locked cards)
 	var player_hand_ref = player_hand if player == "player" else opponent_hand
 	if deck.get_card_count() < 1:
 		_unlock_all_cards()
 		return {"success": false, "message": "No cards left in deck"}
 
-	var drawn_cards = deck.get_top_cards(1)
-	if drawn_cards.is_empty():
+	# Find first unlocked card from top of deck
+	var drawn_card = null
+	var all_deck_cards = deck._held_cards.duplicate()
+	all_deck_cards.reverse()  # Start from top
+	
+	for card in all_deck_cards:
+		if card and is_instance_valid(card) and not card.has_meta("is_locked"):
+			drawn_card = card
+			break
+	
+	if not drawn_card:
 		_unlock_all_cards()
-		return {"success": false, "message": "Failed to draw card from deck"}
-
-	var drawn_card = drawn_cards[0]
+		return {"success": false, "message": "No unlocked cards available in deck"}
+	
 	if not deck.remove_card(drawn_card):
 		_unlock_all_cards()
 		return {"success": false, "message": "Failed to remove card from deck"}
@@ -471,6 +479,18 @@ func _on_selectable_card_hover_enter(card: Card) -> void:
 	# Show the highlight when mouse enters during selection phase
 	if not is_waiting_for_swap_selection:
 		return
+	
+	# Play selecting swap sound when hovering over selectable cards
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm and card.has_meta("selection_highlight"):
+		# Use card's position in hand to vary pitch slightly
+		var opponent_hand_ref = opponent_hand if pending_swap_player == "player" else player_hand
+		if opponent_hand_ref and "_held_cards" in opponent_hand_ref:
+			var card_index = opponent_hand_ref._held_cards.find(card)
+			if card_index >= 0:
+				# Vary pitch (0.95 to 1.15 range based on position)
+				var pitch = 0.95 + (card_index * 0.05)
+				sm.play_selecting_swap(pitch)
 	
 	if card.has_meta("selection_highlight"):
 		var highlight = card.get_meta("selection_highlight")

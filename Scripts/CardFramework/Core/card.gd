@@ -103,8 +103,8 @@ func _ready() -> void:
 	# Update card visuals if data is available
 	update_card_visuals()
 	
-	# Listen for visual effects changes
-	if has_node("/root/SettingsManager"):
+	# Listen for visual effects changes (only if in tree)
+	if is_inside_tree() and has_node("/root/SettingsManager"):
 		var settings_mgr = get_node("/root/SettingsManager")
 		if settings_mgr and settings_mgr.has_signal("visual_effects_changed"):
 			settings_mgr.visual_effects_changed.connect(_on_visual_effects_changed)
@@ -305,10 +305,14 @@ func lock(overlay_alpha: float = 0.7, debug_visual: bool = false) -> void:
 	LOG.log_args(["Card.lock: created overlay ->", name, "card_size=", card_size])
 
 	# Animate fade in on front overlay only
-	var tween = create_tween()
-	if front_overlay:
+	# Guard: Only create tween if in scene tree
+	if is_inside_tree() and front_overlay:
+		var tween = create_tween()
 		tween.tween_property(front_overlay, "modulate:a", overlay_alpha, 0.2)
 		tween.tween_callback(func(): LOG.log_args(["Card.lock: overlay visible ->", name, "alpha=", overlay_alpha]))
+	elif front_overlay:
+		# If not in tree, just set alpha directly
+		front_overlay.modulate.a = overlay_alpha
 
 	# Optional debug overlay: bright translucent ColorRect so it's obvious on screen
 	if debug_visual:
@@ -379,10 +383,15 @@ func unlock() -> void:
 
 	for overlay in to_fade:
 		if overlay and is_instance_valid(overlay) and overlay.is_inside_tree():
-			var tween = create_tween()
-			tween.tween_property(overlay, "modulate:a", 0.0, 0.12)
-			tween.tween_callback(Callable(overlay, "queue_free"))
-			LOG.log_args(["Card.unlock: fading out overlay ->", name, "overlay=", overlay.name])
+			# Guard: Only create tween if we're in scene tree
+			if is_inside_tree():
+				var tween = create_tween()
+				tween.tween_property(overlay, "modulate:a", 0.0, 0.12)
+				tween.tween_callback(Callable(overlay, "queue_free"))
+				LOG.log_args(["Card.unlock: fading out overlay ->", name, "overlay=", overlay.name])
+			else:
+				# If not in tree, just free directly
+				overlay.queue_free()
 
 	if has_meta("lock_badge"):
 		remove_meta("lock_badge")
@@ -443,7 +452,8 @@ func _can_start_hovering() -> bool:
 
 ## Handles mouse press events with container notification.
 func _handle_mouse_pressed() -> void:
-	card_container.on_card_pressed(self)
+	if card_container:
+		card_container.on_card_pressed(self)
 	super._handle_mouse_pressed()
 
 

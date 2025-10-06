@@ -38,10 +38,19 @@ func _decide_easy(_actions_remaining: int) -> Dictionary:
 	if randf() < 0.4:
 		return {"type": "pass"}
 
-	# Play random card if available
+	# Play random card if available (exclude locked cards)
 	if opponent_hand and opponent_hand.get_card_count() > 0:
 		var cards = opponent_hand._held_cards.duplicate()
-		var random_card = cards[randi() % cards.size()]
+		# Filter out locked cards
+		var available_cards = []
+		for card in cards:
+			if card and not card.has_meta("is_locked"):
+				available_cards.append(card)
+		
+		if available_cards.is_empty():
+			return {"type": "pass"}
+		
+		var random_card = available_cards[randi() % available_cards.size()]
 		return {"type": "play_card", "card": random_card}
 
 	return {"type": "pass"}
@@ -98,13 +107,22 @@ func _get_numeric_value(value: String) -> int:
 ## Find best move based on card effects (Medium AI)
 func _find_best_move(actions_remaining: int) -> Dictionary:
 	var cards = opponent_hand._held_cards.duplicate()
+	# Filter out locked cards
+	var available_cards = []
+	for card in cards:
+		if card and not card.has_meta("is_locked"):
+			available_cards.append(card)
+	
+	if available_cards.is_empty():
+		return {"type": "pass"}
+	
 	var highest_card = null
 	var highest_value = -1
 	var best_draw_card = null
 	var best_swap_card = null
 	
 	# Identify card types and values
-	for card in cards:
+	for card in available_cards:
 		var card_value = _get_numeric_value(card.value)
 		
 		if card.card_name.begins_with("Draw_"):
@@ -149,13 +167,22 @@ func _find_best_move(actions_remaining: int) -> Dictionary:
 ## Find optimal move (Hard AI)
 func _find_optimal_move(actions_remaining: int) -> Dictionary:
 	var cards = opponent_hand._held_cards.duplicate()
+	# Filter out locked cards
+	var available_cards = []
+	for card in cards:
+		if card and not card.has_meta("is_locked"):
+			available_cards.append(card)
+	
+	if available_cards.is_empty():
+		return {"type": "pass"}
+	
 	var hand_value = _calculate_hand_value(opponent_hand)
 	
 	# Evaluate each possible card play
 	var best_card = null
 	var best_expected_value = hand_value  # Current hand value is baseline
 	
-	for card in cards:
+	for card in available_cards:
 		var expected_value = _evaluate_card_play(card, hand_value)
 		
 		# Lower is better (we want to minimize hand value)

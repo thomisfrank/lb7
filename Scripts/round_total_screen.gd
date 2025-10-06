@@ -16,6 +16,7 @@ extends Control
 @export var win_condition_delay: float = 2.0  # Delay after last card before showing win/loss
 @export var score_count_duration: float = 2.0  # How long the winner's score counts up
 @export var final_score_delay: float = 1.0  # Delay before showing loser's score
+@export var beep_delay_multiplier: float = 1.6  # Multiplier for spacing beeps during score count
 
 var player_round_total: int = 0
 var opponent_round_total: int = 0
@@ -137,14 +138,42 @@ func _hide_all_cards() -> void:
 ## Starts the card reveal sequence
 func _start_card_reveals() -> void:
 	var max_cards = max(player_cards.size(), opponent_cards.size())
-	
+
+	# Ensure cards are ordered left-to-right in both display hands before revealing
+	if player_hand:
+		player_hand._held_cards.sort_custom(Callable(self, "_compare_node_x"))
+	if opponent_hand:
+		opponent_hand._held_cards.sort_custom(Callable(self, "_compare_node_x"))
+
 	for i in range(max_cards):
 		await get_tree().create_timer(card_reveal_delay).timeout
 		_reveal_card_at_index(i)
-	
+
 	# After all cards are revealed, show win condition
 	await get_tree().create_timer(win_condition_delay).timeout
 	_show_win_condition()
+
+
+## Helper comparator for sorting cards by global x position (left-to-right)
+func _compare_node_x(a: Node, b: Node) -> int:
+	# If either node is null, keep order
+	if not a or not b:
+		return 0
+	var ax = 0.0
+	var bx = 0.0
+	if a.has_method("get_global_position"):
+		ax = a.get_global_position().x
+	elif a.has_method("get_global_rect") and a.get_global_rect():
+		ax = a.get_global_rect().position.x
+	if b.has_method("get_global_position"):
+		bx = b.get_global_position().x
+	elif b.has_method("get_global_rect") and b.get_global_rect():
+		bx = b.get_global_rect().position.x
+	if ax < bx:
+		return -1
+	elif ax > bx:
+		return 1
+	return 0
 
 
 ## Reveals and scores a card at the given index for both players
@@ -156,6 +185,10 @@ func _reveal_card_at_index(index: int) -> void:
 				var card_node = cards_in_hand[index]
 				var tween = create_tween()
 				tween.tween_property(card_node, "modulate:a", 1.0, card_fade_in_duration)
+				# Play reveal sound
+				var sm = get_node_or_null("/root/SoundManager")
+				if sm:
+					sm.play_reveal()
 	
 	# Reveal opponent card
 	if opponent_hand:
@@ -214,6 +247,15 @@ func _show_win_condition() -> void:
 		var tween = create_tween()
 		tween.tween_property(win_condition_label, "modulate:a", 0.0, 0.0)
 		tween.tween_property(win_condition_label, "modulate:a", 1.0, 0.3)
+		# Play round result sound
+		var sm = get_node_or_null("/root/SoundManager")
+		if sm:
+			if player_won:
+				sm.play_round_won()
+			elif opponent_won:
+				sm.play_round_lost()
+			else:
+				sm.play_round_tied()
 	
 	# Update scores
 	await get_tree().create_timer(0.5).timeout
@@ -222,13 +264,21 @@ func _show_win_condition() -> void:
 	if player_won:
 		await _count_up_score(player_new_score_label, player_round_total)
 		await get_tree().create_timer(final_score_delay).timeout
-		# Show opponent's score (no change)
+		# Show opponent's score (no change - they lost, no points added)
 		_flash_label(opponent_new_score_label)
+		# Play score beep for loser getting 0 points
+		var sm = get_node_or_null("/root/SoundManager")
+		if sm:
+			sm.play_score_beep()
 	elif opponent_won:
 		await _count_up_score(opponent_new_score_label, opponent_round_total)
 		await get_tree().create_timer(final_score_delay).timeout
-		# Show player's score (no change)
+		# Show player's score (no change - they lost, no points added)
 		_flash_label(player_new_score_label)
+		# Play score beep for loser getting 0 points
+		var sm = get_node_or_null("/root/SoundManager")
+		if sm:
+			sm.play_score_beep()
 	else:
 		# Tie - both scores stay the same, just flash them
 		_flash_label(player_new_score_label)
@@ -248,6 +298,19 @@ func _count_up_score(label: Label, points_to_add: int) -> void:
 	var end_score = start_score + points_to_add
 	var steps = 20  # Number of steps in the count animation
 	var step_duration = score_count_duration / steps
+
+	# Play counting beeps in parallel with the visual count
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm:
+		# Start a sequence: map the points to the number of beeps for a satisfying effect
+		# We'll play `min(points_to_add, steps)` beeps, stepping pitch slightly each time
+		var beep_count = min(points_to_add, steps)
+		var start_pitch = 0.95
+		var pitch_step = 1.03
+		# Space beeps out by the multiplier so they're more audible
+		var beep_delay = step_duration * beep_delay_multiplier
+		# Fire-and-forget the async sequence so it runs alongside the visual count
+		sm.play_count_sequence(start_pitch, pitch_step, beep_count, beep_delay, -6)
 	
 	for i in range(steps + 1):
 		var progress = float(i) / float(steps)

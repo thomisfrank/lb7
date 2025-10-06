@@ -1,9 +1,9 @@
 [gd_scene load_steps=9 format=3 uid="uid://cvjib4et5vg1t"]
 
-[ext_resource type="Texture2D" uid="uid://ch7ivwbfqm5tx" path="res://Assets/UI/Button.png" id="1_8bxxr"]
-[ext_resource type="Texture2D" uid="uid://c2kmdgyqrjubg" path="res://Assets/UI/ButtonPressed.png" id="2_5xx2a"]
-[ext_resource type="Texture2D" uid="uid://dck6yageyshhf" path="res://Assets/UI/ButtonHover.png" id="3_kbgbk"]
-[ext_resource type="FontFile" uid="uid://cd0mg1j1e8pyd" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="4_5xx2a"]
+[ext_resource type="Texture2D" uid="uid://dd4vehsic1nj7" path="res://Assets/UI/Button.png" id="1_8bxxr"]
+[ext_resource type="Texture2D" uid="uid://dkf2c3nsmphwr" path="res://Assets/UI/ButtonPressed.png" id="2_5xx2a"]
+[ext_resource type="Texture2D" uid="uid://ca0skchj7jebn" path="res://Assets/UI/ButtonHover.png" id="3_kbgbk"]
+[ext_resource type="FontFile" uid="uid://bp81hts6eecnx" path="res://Assets/fonts/PixelifySans-VariableFont_wght.ttf" id="4_5xx2a"]
 [ext_resource type="Shader" uid="uid://d2rg4w1w174ch" path="res://Scripts/Shaders/TextJitter.gdshader" id="4_kbgbk"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_20rfi"]
@@ -12,6 +12,7 @@
 shader = ExtResource("4_kbgbk")
 shader_parameter/jitter_rate = 4.50000016625
 shader_parameter/jitter_amount = 0.002000000095
+shader_parameter/animation_speed = 1.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_kbgbk"]
 font = ExtResource("4_5xx2a")
